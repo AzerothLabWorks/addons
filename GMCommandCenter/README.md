@@ -26,11 +26,27 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 ## Current Features
 
 - Searchable command browser with categories and security levels.
+- Wildcard-aware command search. Examples: `lookup*`, `*spell`, `tele*name`.
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
-- Lookup panel for `.lookup item`, `.lookup spell`, `.lookup creature`, `.lookup quest`, and `.lookup teleport`.
+- Name/ID lookup panel for `.lookup item`, `.lookup spell`, `.lookup creature`, `.lookup quest`, and `.lookup teleport`.
 - Action buttons for `.additem`, `.learn`, `.go creature id`, `.quest add`, and `.teleport`.
 - WotLKDB URL helper for ID-based lookups such as `https://wotlkdb.com/?item=40684`.
+
+## Name Search and Wildcards
+
+Use the lookup panel to search by names such as:
+
+```text
+frostbolt
+frost*
+*bolt
+*greater heal*
+```
+
+The addon understands wildcards in its own UI search. AzerothCore lookup commands search by substring, so wildcard lookup terms are converted to the strongest substring before the command is sent. For example, `*greater heal*` is sent as `.lookup spell greater heal`.
+
+ID-only actions such as `Learn Spell`, `Go Creature ID`, and `Add Quest` require a numeric ID. Search by name first, then run the action with the returned ID.
 
 ## Important Limitation
 

@@ -26,6 +26,60 @@ local function EncodeUrl(value)
     return value
 end
 
+local function EscapePattern(value)
+    value = tostring(value or "")
+    return string.gsub(value, "([%^%$%(%)%%%.%[%]%+%-%?])", "%%%1")
+end
+
+local function WildcardMatch(haystack, needle)
+    haystack = string.lower(tostring(haystack or ""))
+    needle = string.lower(Trim(needle))
+    if needle == "" then
+        return true
+    end
+
+    if not string.find(needle, "*", 1, true) then
+        return string.find(haystack, needle, 1, true) ~= nil
+    end
+
+    local pattern = EscapePattern(needle)
+    pattern = string.gsub(pattern, "%*", ".*")
+    if string.sub(pattern, 1, 2) ~= ".*" then
+        pattern = ".*" .. pattern
+    end
+    if string.sub(pattern, -2) ~= ".*" then
+        pattern = pattern .. ".*"
+    end
+    return string.find(haystack, "^" .. pattern .. "$") ~= nil
+end
+
+local function LookupSearchTerm(value)
+    value = Trim(value)
+    if not string.find(value, "*", 1, true) then
+        return value, false
+    end
+
+    local best = ""
+    for part in string.gmatch(value, "[^%*]+") do
+        part = Trim(part)
+        if string.len(part) > string.len(best) then
+            best = part
+        end
+    end
+
+    if best == "" then
+        best = string.gsub(value, "%*", "")
+        best = Trim(best)
+    end
+
+    return best, true
+end
+
+local function IsNumber(value)
+    value = Trim(value)
+    return value ~= "" and string.find(value, "^%-?%d+$") ~= nil
+end
+
 local function RunCommand(command)
     command = Trim(command)
     if command == "" then
@@ -79,13 +133,13 @@ local function Matches(entry)
         return false
     end
 
-    local needle = string.lower(state.filter or "")
+    local needle = state.filter or ""
     if needle == "" then
         return true
     end
 
-    local haystack = string.lower(entry.cat .. " " .. entry.name .. " " .. entry.syntax .. " " .. entry.help)
-    return string.find(haystack, needle, 1, true) ~= nil
+    local haystack = entry.cat .. " " .. entry.name .. " " .. entry.syntax .. " " .. entry.help
+    return WildcardMatch(haystack, needle)
 end
 
 local function FilterCommands()
@@ -328,6 +382,9 @@ local function BuildLookupPanel(parent)
     queryLabel:SetPoint("TOPLEFT", 2, -4)
     GMCC_LookupQuery = CreateEditBox(panel, "GMCC_LookupQuery", 260, 24)
     GMCC_LookupQuery:SetPoint("TOPLEFT", queryLabel, "BOTTOMLEFT", 0, -4)
+    local wildcardHelp = CreateLabel(panel, nil, "Wildcards allowed for UI search. Server lookups use the strongest substring.", "small")
+    wildcardHelp:SetPoint("TOPLEFT", GMCC_LookupQuery, "BOTTOMLEFT", 0, -8)
+    wildcardHelp:SetTextColor(0.72, 0.72, 0.72)
 
     local amountLabel = CreateLabel(panel, nil, "Count / extra", "small")
     amountLabel:SetPoint("LEFT", queryLabel, "RIGHT", 220, 0)
@@ -345,10 +402,19 @@ local function BuildLookupPanel(parent)
         local row = math.floor((index - 1) / 4)
         button:SetPoint("TOPLEFT", 2 + (col * 140), -128 - (row * 30))
         button:SetScript("OnClick", function()
-            local query = Trim(GMCC_LookupQuery:GetText())
+            local rawQuery = Trim(GMCC_LookupQuery:GetText())
             local amount = Trim(GMCC_LookupAmount:GetText())
-            if query == "" then
+            if rawQuery == "" then
                 Print("Enter a name or ID first.")
+                return
+            end
+            local query, usedWildcard = LookupSearchTerm(rawQuery)
+            if query == "" then
+                Print("Wildcard search needs at least one letter or number.")
+                return
+            end
+            if def.idOnly and not IsNumber(query) then
+                Print(def.label .. " needs a numeric ID. Run a lookup by name first, then use the returned ID.")
                 return
             end
 
@@ -359,6 +425,9 @@ local function BuildLookupPanel(parent)
                 command = string.format(def.command, query)
             end
             RunCommand(command)
+            if usedWildcard then
+                Print("Wildcard lookup sent as substring: " .. query)
+            end
 
             if def.url then
                 SetEditBoxText(GMCC_UrlBox, string.format(def.url, EncodeUrl(query)))
