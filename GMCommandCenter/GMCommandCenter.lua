@@ -12,6 +12,9 @@ local state = {
     lookupKind = nil,
     lookupResultLines = {},
     lookupResultButtons = {},
+    containerResults = {},
+    containerResultLines = {},
+    containerResultButtons = {},
 }
 
 local categories = { "All", "GM", "Items", "Spells", "Character", "Teleport", "NPCs", "Quests", "Server" }
@@ -224,6 +227,62 @@ local function CaptureLookupResult(message)
     RefreshLookupResults()
 end
 
+local function RefreshContainerResults()
+    if not GMCC_ContainerStatus then
+        return
+    end
+
+    local count = table.getn(state.containerResults)
+    if count == 0 then
+        GMCC_ContainerStatus:SetText("No container results yet.")
+    else
+        GMCC_ContainerStatus:SetText(count .. " container results")
+    end
+
+    for i = 1, 6 do
+        local item = state.containerResults[i]
+        local line = state.containerResultLines[i]
+        local button = state.containerResultButtons[i]
+        if line then
+            if item then
+                line:SetText(item.id .. " - " .. item.name .. " | slots " .. item.slots .. " | " .. item.type .. " | " .. item.family)
+            else
+                line:SetText("")
+            end
+        end
+        if button then
+            if item then
+                button.itemId = item.id
+                button:SetText("Add x" .. GetLookupAmount())
+                button:Show()
+            else
+                button.itemId = nil
+                button:Hide()
+            end
+        end
+    end
+end
+
+local function SearchContainers()
+    state.containerResults = {}
+    local query = GMCC_ContainerSearchBox and GMCC_ContainerSearchBox:GetText() or ""
+    query = Trim(query)
+    if query == "" then
+        query = "*"
+    end
+
+    for _, item in ipairs(GMCC_CONTAINER_ITEMS or {}) do
+        local haystack = item.name .. " " .. item.type .. " " .. item.family .. " container slots " .. item.slots .. " " .. item.slots .. " slots"
+        if WildcardMatch(haystack, query) then
+            table.insert(state.containerResults, item)
+            if table.getn(state.containerResults) >= 6 then
+                break
+            end
+        end
+    end
+    RefreshContainerResults()
+end
+
 local function RunCommand(command)
     command = Trim(command)
     if command == "" then
@@ -355,12 +414,12 @@ local function SetTab(tab)
         GMCC_CommandPanel:Show()
         GMCC_LookupPanel:Hide()
         GMCC_CommandsTab:Disable()
-        GMCC_LookupsTab:Enable()
+        GMCC_ToolsTab:Enable()
     else
         GMCC_CommandPanel:Hide()
         GMCC_LookupPanel:Show()
         GMCC_CommandsTab:Enable()
-        GMCC_LookupsTab:Disable()
+        GMCC_ToolsTab:Disable()
     end
 end
 
@@ -523,11 +582,14 @@ local function BuildLookupPanel(parent)
     panel:SetPoint("TOPLEFT", 16, -72)
     panel:SetPoint("BOTTOMRIGHT", -16, 16)
 
-    local queryLabel = CreateLabel(panel, nil, "Name or ID", "small")
-    queryLabel:SetPoint("TOPLEFT", 2, -4)
+    local toolsTitle = CreateLabel(panel, nil, "GM Tools", "large")
+    toolsTitle:SetPoint("TOPLEFT", 2, -2)
+
+    local queryLabel = CreateLabel(panel, nil, "Server search name or ID", "small")
+    queryLabel:SetPoint("TOPLEFT", 2, -30)
     GMCC_LookupQuery = CreateEditBox(panel, "GMCC_LookupQuery", 260, 24)
     GMCC_LookupQuery:SetPoint("TOPLEFT", queryLabel, "BOTTOMLEFT", 0, -4)
-    local wildcardHelp = CreateLabel(panel, nil, "Wildcards allowed for UI search. Server lookups use the strongest substring.", "small")
+    local wildcardHelp = CreateLabel(panel, nil, "Server lookups use AzerothCore .lookup commands. Offline container search is below.", "small")
     wildcardHelp:SetPoint("TOPLEFT", GMCC_LookupQuery, "BOTTOMLEFT", 0, -8)
     wildcardHelp:SetTextColor(0.72, 0.72, 0.72)
 
@@ -566,18 +628,18 @@ local function BuildLookupPanel(parent)
             Print("Enter gold, silver, or copper first.")
             return
         end
-        RunCommand(".modify money " .. copper)
+        RunCommand(".money " .. copper)
     end)
 
     GMCC_UrlBox = CreateEditBox(panel, "GMCC_UrlBox", 420, 24)
-    GMCC_UrlBox:SetPoint("TOPLEFT", 2, -90)
+    GMCC_UrlBox:SetPoint("TOPLEFT", 2, -116)
     GMCC_UrlBox:SetText("WotLKDB URL appears here for ID-based actions.")
 
     local function MakeLookupButton(def, index)
         local button = CreateButton(panel, nil, def.label, 132, 24)
         local col = math.mod(index - 1, 4)
         local row = math.floor((index - 1) / 4)
-        button:SetPoint("TOPLEFT", 2 + (col * 140), -128 - (row * 30))
+        button:SetPoint("TOPLEFT", 2 + (col * 140), -154 - (row * 30))
         button:SetScript("OnClick", function()
             local rawQuery = Trim(GMCC_LookupQuery:GetText())
             local amount = Trim(GMCC_LookupAmount:GetText())
@@ -620,7 +682,7 @@ local function BuildLookupPanel(parent)
     end
 
     local resultsLabel = CreateLabel(panel, nil, "Server lookup results", "large")
-    resultsLabel:SetPoint("TOPLEFT", 2, -210)
+    resultsLabel:SetPoint("TOPLEFT", 2, -230)
     GMCC_LookupResultStatus = CreateLabel(panel, "GMCC_LookupResultStatus", "No captured lookup results yet.", "small")
     GMCC_LookupResultStatus:SetPoint("TOPLEFT", resultsLabel, "BOTTOMLEFT", 0, -4)
     GMCC_LookupResultStatus:SetTextColor(0.72, 0.72, 0.72)
@@ -660,13 +722,51 @@ local function BuildLookupPanel(parent)
         end
     end
 
+    local containerLabel = CreateLabel(panel, nil, "Items: Containers", "large")
+    containerLabel:SetPoint("TOPLEFT", 2, -390)
+    GMCC_ContainerSearchBox = CreateEditBox(panel, "GMCC_ContainerSearchBox", 210, 24)
+    GMCC_ContainerSearchBox:SetPoint("TOPLEFT", containerLabel, "BOTTOMLEFT", 0, -6)
+    GMCC_ContainerSearchBox:SetText("*")
+    GMCC_ContainerSearchBox:SetScript("OnEnterPressed", function()
+        SearchContainers()
+    end)
+
+    local searchContainers = CreateButton(panel, nil, "Search", 72, 24)
+    searchContainers:SetPoint("LEFT", GMCC_ContainerSearchBox, "RIGHT", 10, 0)
+    searchContainers:SetScript("OnClick", SearchContainers)
+
+    GMCC_ContainerStatus = CreateLabel(panel, "GMCC_ContainerStatus", "No container results yet.", "small")
+    GMCC_ContainerStatus:SetPoint("LEFT", searchContainers, "RIGHT", 12, 0)
+    GMCC_ContainerStatus:SetTextColor(0.72, 0.72, 0.72)
+
+    for i = 1, 6 do
+        local line = CreateLabel(panel, nil, "", "small")
+        if i == 1 then
+            line:SetPoint("TOPLEFT", GMCC_ContainerSearchBox, "BOTTOMLEFT", 0, -10)
+        else
+            line:SetPoint("TOPLEFT", state.containerResultLines[i - 1], "BOTTOMLEFT", 0, -4)
+        end
+        line:SetWidth(500)
+        state.containerResultLines[i] = line
+
+        local add = CreateButton(panel, nil, "Add", 88, 20)
+        add:SetPoint("LEFT", line, "RIGHT", 10, 0)
+        add:SetScript("OnClick", function(self)
+            if self.itemId then
+                RunCommand(".additem " .. self.itemId .. " " .. GetLookupAmount())
+            end
+        end)
+        add:Hide()
+        state.containerResultButtons[i] = add
+    end
+
     local quickLabel = CreateLabel(panel, nil, "Quick actions", "large")
-    quickLabel:SetPoint("TOPLEFT", 2, -390)
+    quickLabel:SetPoint("TOPLEFT", 2, -560)
     for i, action in ipairs(GMCC_QUICK_ACTIONS) do
         local button = CreateButton(panel, nil, action.label, 88, 24)
         local col = math.mod(i - 1, 6)
         local row = math.floor((i - 1) / 6)
-        button:SetPoint("TOPLEFT", 2 + (col * 94), -418 - (row * 30))
+        button:SetPoint("TOPLEFT", 2 + (col * 94), -588 - (row * 30))
         button:SetScript("OnClick", function()
             RunCommand(action.command)
         end)
@@ -678,7 +778,7 @@ end
 local function BuildFrame()
     local frame = CreateFrame("Frame", "GMCommandCenterFrame", UIParent)
     frame:SetWidth(680)
-    frame:SetHeight(620)
+    frame:SetHeight(780)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
     frame:EnableMouse(true)
@@ -706,9 +806,9 @@ local function BuildFrame()
     GMCC_CommandsTab:SetPoint("TOPLEFT", 18, -44)
     GMCC_CommandsTab:SetScript("OnClick", function() SetTab("commands") end)
 
-    GMCC_LookupsTab = CreateButton(frame, "GMCC_LookupsTab", "Lookups", 92, 24)
-    GMCC_LookupsTab:SetPoint("LEFT", GMCC_CommandsTab, "RIGHT", 8, 0)
-    GMCC_LookupsTab:SetScript("OnClick", function() SetTab("lookups") end)
+    GMCC_ToolsTab = CreateButton(frame, "GMCC_ToolsTab", "GM Tools", 92, 24)
+    GMCC_ToolsTab:SetPoint("LEFT", GMCC_CommandsTab, "RIGHT", 8, 0)
+    GMCC_ToolsTab:SetScript("OnClick", function() SetTab("lookups") end)
 
     BuildCommandsPanel(frame)
     BuildLookupPanel(frame)

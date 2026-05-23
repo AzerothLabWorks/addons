@@ -29,18 +29,19 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Wildcard-aware command search. Examples: `lookup*`, `*spell`, `tele*name`.
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
-- Name/ID lookup panel for `.lookup item`, `.lookup spell`, `.lookup creature`, `.lookup quest`, and `.lookup teleport`.
-- Captures recent server lookup responses from chat and displays them in the Lookups tab.
+- GM Tools panel for `.lookup item`, `.lookup spell`, `.lookup creature`, `.lookup quest`, `.lookup teleport`, money, and typed item searches.
+- Captures recent server lookup responses from chat and displays them in the GM Tools tab.
 - Spell lookup results include **Learn** and **Aura** buttons when a spell ID can be detected.
 - Item lookup results include **Add xN** and **Add 1** buttons when an item ID can be detected.
 - Quest and creature lookup results include action buttons when IDs can be detected.
-- Money helper converts gold/silver/copper into `.modify money #copper`.
+- Money helper converts gold/silver/copper into `.money #copper`.
+- Offline container search lists bag ID, name, slots, type, and bag family, with an **Add xN** button.
 - Action buttons for `.additem`, `.learn`, `.go creature id`, `.quest add`, and `.teleport`.
 - WotLKDB URL helper for ID-based lookups such as `https://wotlkdb.com/?item=40684`.
 
 ## Name Search and Wildcards
 
-Use the lookup panel to search by names such as:
+Use the GM Tools server search to search by names such as:
 
 ```text
 frostbolt
@@ -53,7 +54,7 @@ The addon understands wildcards in its own UI search. AzerothCore lookup command
 
 ID-only actions such as `Learn Spell`, `Go Creature ID`, and `Add Quest` require a numeric ID. Search by name first, then run the action with the returned ID.
 
-For spell workflows such as Riding, search by name from the Lookups tab:
+For spell workflows such as Riding, search by name from the GM Tools tab:
 
 ```text
 Riding
@@ -63,7 +64,9 @@ Click **Lookup Spell**, then use the **Learn** button next to the captured resul
 
 For item workflows, set **Count / extra**, search by item name, click **Lookup Item**, then use **Add xN** beside the captured result.
 
-For money, enter gold/silver/copper in the **Money** fields and click **Give**. This runs `.modify money` against the selected player, or yourself if no valid player target is selected.
+For container workflows, use **Items: Containers** in the **GM Tools** tab. Search `*` for all containers, or search terms like `herb`, `mining`, `soul`, or `16 slots`.
+
+For money, enter gold/silver/copper in the **Money** fields and click **Give**. This runs `.money` against the selected player, or yourself if no valid player target is selected.
 
 ## Important Limitation
 
