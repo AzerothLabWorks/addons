@@ -30,6 +30,7 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
 - Name/ID lookup panel for `.lookup item`, `.lookup spell`, `.lookup creature`, `.lookup quest`, and `.lookup teleport`.
+- Captures recent server lookup responses from chat and displays them in the Lookups tab.
 - Action buttons for `.additem`, `.learn`, `.go creature id`, `.quest add`, and `.teleport`.
 - WotLKDB URL helper for ID-based lookups such as `https://wotlkdb.com/?item=40684`.
 

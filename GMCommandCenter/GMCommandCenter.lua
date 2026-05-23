@@ -6,6 +6,10 @@ local state = {
     category = "All",
     tab = "commands",
     rows = {},
+    lookupResults = {},
+    lookupCaptureUntil = 0,
+    lookupStatus = "No captured lookup results yet.",
+    lookupResultLines = {},
 }
 
 local categories = { "All", "GM", "Items", "Spells", "Character", "Teleport", "NPCs", "Quests", "Server" }
@@ -80,6 +84,56 @@ local function IsNumber(value)
     return value ~= "" and string.find(value, "^%-?%d+$") ~= nil
 end
 
+local function RefreshLookupResults()
+    if not GMCC_LookupResultStatus then
+        return
+    end
+
+    local count = table.getn(state.lookupResults)
+    if count == 0 then
+        GMCC_LookupResultStatus:SetText(state.lookupStatus)
+    else
+        GMCC_LookupResultStatus:SetText(count .. " captured result lines")
+    end
+
+    for i = 1, 8 do
+        local line = state.lookupResultLines[i]
+        if line then
+            line:SetText(state.lookupResults[i] or "")
+        end
+    end
+end
+
+local function ClearLookupResults(status)
+    state.lookupResults = {}
+    state.lookupStatus = status or "No captured lookup results yet."
+    RefreshLookupResults()
+end
+
+local function StartLookupCapture(command)
+    if string.find(command, "^%.lookup%s") then
+        state.lookupCaptureUntil = GetTime() + 8
+        ClearLookupResults("Waiting for server lookup results...")
+    end
+end
+
+local function CaptureLookupResult(message)
+    if state.lookupCaptureUntil <= 0 or GetTime() > state.lookupCaptureUntil then
+        return
+    end
+
+    message = Trim(message)
+    if message == "" then
+        return
+    end
+
+    table.insert(state.lookupResults, message)
+    while table.getn(state.lookupResults) > 8 do
+        table.remove(state.lookupResults, 1)
+    end
+    RefreshLookupResults()
+end
+
 local function RunCommand(command)
     command = Trim(command)
     if command == "" then
@@ -91,6 +145,7 @@ local function RunCommand(command)
         command = "." .. command
     end
 
+    StartLookupCapture(command)
     SendChatMessage(command, "SAY")
     Print("Ran: " .. command)
     GMCommandCenterDB = GMCommandCenterDB or {}
@@ -442,13 +497,37 @@ local function BuildLookupPanel(parent)
         MakeLookupButton(def, i)
     end
 
+    local resultsLabel = CreateLabel(panel, nil, "Server lookup results", "large")
+    resultsLabel:SetPoint("TOPLEFT", 2, -210)
+    GMCC_LookupResultStatus = CreateLabel(panel, "GMCC_LookupResultStatus", "No captured lookup results yet.", "small")
+    GMCC_LookupResultStatus:SetPoint("TOPLEFT", resultsLabel, "BOTTOMLEFT", 0, -4)
+    GMCC_LookupResultStatus:SetTextColor(0.72, 0.72, 0.72)
+
+    local clearResults = CreateButton(panel, nil, "Clear", 70, 22)
+    clearResults:SetPoint("LEFT", GMCC_LookupResultStatus, "RIGHT", 16, 0)
+    clearResults:SetScript("OnClick", function()
+        ClearLookupResults()
+    end)
+
+    for i = 1, 8 do
+        local line = CreateLabel(panel, nil, "", "small")
+        if i == 1 then
+            line:SetPoint("TOPLEFT", GMCC_LookupResultStatus, "BOTTOMLEFT", 0, -8)
+        else
+            line:SetPoint("TOPLEFT", state.lookupResultLines[i - 1], "BOTTOMLEFT", 0, -3)
+        end
+        line:SetWidth(620)
+        line:SetTextColor(0.9, 0.9, 0.9)
+        state.lookupResultLines[i] = line
+    end
+
     local quickLabel = CreateLabel(panel, nil, "Quick actions", "large")
-    quickLabel:SetPoint("TOPLEFT", 2, -230)
+    quickLabel:SetPoint("TOPLEFT", 2, -390)
     for i, action in ipairs(GMCC_QUICK_ACTIONS) do
         local button = CreateButton(panel, nil, action.label, 88, 24)
         local col = math.mod(i - 1, 6)
         local row = math.floor((i - 1) / 6)
-        button:SetPoint("TOPLEFT", 2 + (col * 94), -258 - (row * 30))
+        button:SetPoint("TOPLEFT", 2 + (col * 94), -418 - (row * 30))
         button:SetScript("OnClick", function()
             RunCommand(action.command)
         end)
@@ -460,7 +539,7 @@ end
 local function BuildFrame()
     local frame = CreateFrame("Frame", "GMCommandCenterFrame", UIParent)
     frame:SetWidth(680)
-    frame:SetHeight(500)
+    frame:SetHeight(620)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
     frame:EnableMouse(true)
@@ -507,11 +586,27 @@ SlashCmdList["GMCOMMANDCENTER"] = ToggleMainFrame
 
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("ADDON_LOADED")
-loader:SetScript("OnEvent", function(self, event, addonName)
-    if addonName ~= ADDON then
+loader:SetScript("OnEvent", function(self, event, arg1)
+    if event == "CHAT_MSG_SYSTEM" then
+        CaptureLookupResult(arg1)
         return
     end
+
+    if arg1 ~= ADDON then
+        return
+    end
+
     GMCommandCenterDB = GMCommandCenterDB or {}
     BuildFrame()
+    loader:RegisterEvent("CHAT_MSG_SYSTEM")
     Print("loaded. Type /gmcc or /agm.")
+end)
+loader:SetScript("OnUpdate", function()
+    if state.lookupCaptureUntil > 0 and GetTime() > state.lookupCaptureUntil then
+        state.lookupCaptureUntil = 0
+        if table.getn(state.lookupResults) == 0 then
+            state.lookupStatus = "No lookup results captured. Check the chat window for server output."
+            RefreshLookupResults()
+        end
+    end
 end)
