@@ -83,16 +83,3 @@ GMCC_QUICK_ACTIONS = {
     { label = "Save Me", command = ".save" },
     { label = "Save All", command = ".saveall" },
 }
-
-GMCC_LOOKUPS = {
-    { label = "Lookup Item", command = ".lookup item %s", url = "https://wotlkdb.com/?search=%s" },
-    { label = "Add Item", command = ".additem %s %s", url = "https://wotlkdb.com/?item=%s" },
-    { label = "Lookup Spell", command = ".lookup spell %s", url = "https://wotlkdb.com/?search=%s" },
-    { label = "Learn Spell", command = ".learn %s", url = "https://wotlkdb.com/?spell=%s", idOnly = true },
-    { label = "Lookup Creature", command = ".lookup creature %s", url = "https://wotlkdb.com/?search=%s" },
-    { label = "Go Creature ID", command = ".go creature id %s", url = "https://wotlkdb.com/?npc=%s", idOnly = true },
-    { label = "Lookup Quest", command = ".lookup quest %s", url = "https://wotlkdb.com/?search=%s" },
-    { label = "Add Quest", command = ".quest add %s", url = "https://wotlkdb.com/?quest=%s", idOnly = true },
-    { label = "Lookup Tele", command = ".lookup teleport %s" },
-    { label = "Teleport", command = ".teleport %s" },
-}
