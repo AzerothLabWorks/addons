@@ -30,9 +30,11 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
 - GM Tools panel for `.lookup item`, `.lookup spell`, `.lookup creature`, `.lookup quest`, `.lookup teleport`, money, and typed item searches.
-- Captures recent server lookup responses from chat and displays them in the GM Tools tab.
+- Captures recent server lookup responses from chat, filters them by lookup type, and displays them in the GM Tools tab.
 - Spell lookup results include **Learn** and **Aura** buttons when a spell ID can be detected.
 - Item lookup results include **Add xN** and **Add 1** buttons when an item ID can be detected.
+- Item rows display item type, item level, and required level when the ID exists in the local AzerothCore metadata.
+- Spell rows display required level and inferred class/profession bucket when the ID exists in trainer metadata.
 - Quest and creature lookup results include action buttons when IDs can be detected.
 - Money helper converts gold/silver/copper into `.money #copper`.
 - Offline container search lists bag ID, name, slots, type, and bag family, with an **Add xN** button.
@@ -61,6 +63,8 @@ Riding
 ```
 
 Click **Lookup Spell**, then use the **Learn** button next to the captured result you want.
+
+Spell and item server lookups are type-filtered. A spell lookup ignores item-link result lines, and an item lookup ignores spell-link result lines.
 
 For item workflows, set **Count / extra**, search by item name, click **Lookup Item**, then use **Add xN** beside the captured result.
 

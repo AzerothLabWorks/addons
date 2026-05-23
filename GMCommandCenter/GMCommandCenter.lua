@@ -112,6 +112,50 @@ local function ExtractLookupId(message, kind)
     return id
 end
 
+local function LookupResultMatchesKind(message, kind, id)
+    message = tostring(message or "")
+    if kind == "spell" then
+        if string.find(message, "|Hitem:", 1, true) then
+            return false
+        end
+        return string.find(message, "|Hspell:", 1, true) ~= nil or (id and GMCC_SPELL_METADATA and GMCC_SPELL_METADATA[tonumber(id)] ~= nil)
+    elseif kind == "item" then
+        if string.find(message, "|Hspell:", 1, true) then
+            return false
+        end
+        return string.find(message, "|Hitem:", 1, true) ~= nil or (id and GMCC_ITEM_METADATA and GMCC_ITEM_METADATA[tonumber(id)] ~= nil)
+    elseif kind == "quest" then
+        if string.find(message, "|Hspell:", 1, true) or string.find(message, "|Hitem:", 1, true) then
+            return false
+        end
+        return id ~= nil
+    elseif kind == "creature" or kind == "teleport" then
+        return id ~= nil
+    end
+
+    return true
+end
+
+local function BuildLookupDisplayText(result)
+    if not result then
+        return ""
+    end
+
+    local text = result.text or ""
+    local id = tonumber(result.id)
+    if result.kind == "item" and id and GMCC_ITEM_METADATA and GMCC_ITEM_METADATA[id] then
+        local meta = GMCC_ITEM_METADATA[id]
+        text = text .. " | " .. meta.t .. " | ilvl " .. meta.il .. " | req " .. meta.rl
+    elseif result.kind == "spell" and id and GMCC_SPELL_METADATA and GMCC_SPELL_METADATA[id] then
+        local meta = GMCC_SPELL_METADATA[id]
+        text = text .. " | req " .. meta.rl .. " | class " .. meta.c
+    elseif result.kind == "spell" and id then
+        text = text .. " | req unknown | class Any/Unknown"
+    end
+
+    return text
+end
+
 local function CopperFromMoney(gold, silver, copper)
     gold = tonumber(Trim(gold)) or 0
     silver = tonumber(Trim(silver)) or 0
@@ -148,7 +192,7 @@ local function RefreshLookupResults()
         local buttons = state.lookupResultButtons[i]
         local result = state.lookupResults[i]
         if line then
-            line:SetText(result and result.text or "")
+            line:SetText(BuildLookupDisplayText(result))
         end
         if buttons then
             for buttonIndex = 1, table.getn(buttons) do
@@ -216,10 +260,15 @@ local function CaptureLookupResult(message)
         return
     end
 
+    local id = ExtractLookupId(message, state.lookupKind)
+    if not LookupResultMatchesKind(message, state.lookupKind, id) then
+        return
+    end
+
     table.insert(state.lookupResults, {
         text = message,
         kind = state.lookupKind,
-        id = ExtractLookupId(message, state.lookupKind),
+        id = id,
     })
     while table.getn(state.lookupResults) > 8 do
         table.remove(state.lookupResults, 1)
