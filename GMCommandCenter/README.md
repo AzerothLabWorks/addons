@@ -31,6 +31,7 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Server-side `.help` shortcut for the selected command.
 - Name/ID lookup panel for `.lookup item`, `.lookup spell`, `.lookup creature`, `.lookup quest`, and `.lookup teleport`.
 - Captures recent server lookup responses from chat and displays them in the Lookups tab.
+- Spell lookup results include **Learn** buttons when a spell ID can be detected.
 - Action buttons for `.additem`, `.learn`, `.go creature id`, `.quest add`, and `.teleport`.
 - WotLKDB URL helper for ID-based lookups such as `https://wotlkdb.com/?item=40684`.
 
@@ -48,6 +49,14 @@ frost*
 The addon understands wildcards in its own UI search. AzerothCore lookup commands search by substring, so wildcard lookup terms are converted to the strongest substring before the command is sent. For example, `*greater heal*` is sent as `.lookup spell greater heal`.
 
 ID-only actions such as `Learn Spell`, `Go Creature ID`, and `Add Quest` require a numeric ID. Search by name first, then run the action with the returned ID.
+
+For spell workflows such as Riding, search by name from the Lookups tab:
+
+```text
+Riding
+```
+
+Click **Lookup Spell**, then use the **Learn** button next to the captured result you want.
 
 ## Important Limitation
 

@@ -9,7 +9,9 @@ local state = {
     lookupResults = {},
     lookupCaptureUntil = 0,
     lookupStatus = "No captured lookup results yet.",
+    lookupKind = nil,
     lookupResultLines = {},
+    lookupResultButtons = {},
 }
 
 local categories = { "All", "GM", "Items", "Spells", "Character", "Teleport", "NPCs", "Quests", "Server" }
@@ -84,6 +86,22 @@ local function IsNumber(value)
     return value ~= "" and string.find(value, "^%-?%d+$") ~= nil
 end
 
+local function ExtractSpellId(message)
+    message = tostring(message or "")
+    local id = string.match(message, "|Hspell:(%d+)")
+    if id then
+        return id
+    end
+
+    id = string.match(message, "^[^%d]*(%d%d%d+)")
+    if id then
+        return id
+    end
+
+    id = string.match(message, "%f[%d](%d%d%d+)%f[^%d]")
+    return id
+end
+
 local function RefreshLookupResults()
     if not GMCC_LookupResultStatus then
         return
@@ -98,8 +116,20 @@ local function RefreshLookupResults()
 
     for i = 1, 8 do
         local line = state.lookupResultLines[i]
+        local button = state.lookupResultButtons[i]
+        local result = state.lookupResults[i]
         if line then
-            line:SetText(state.lookupResults[i] or "")
+            line:SetText(result and result.text or "")
+        end
+        if button then
+            if result and result.spellId then
+                button.spellId = result.spellId
+                button:SetText("Learn " .. result.spellId)
+                button:Show()
+            else
+                button.spellId = nil
+                button:Hide()
+            end
         end
     end
 end
@@ -112,6 +142,7 @@ end
 
 local function StartLookupCapture(command)
     if string.find(command, "^%.lookup%s") then
+        state.lookupKind = string.match(command, "^%.lookup%s+(%S+)") or nil
         state.lookupCaptureUntil = GetTime() + 8
         ClearLookupResults("Waiting for server lookup results...")
     end
@@ -127,7 +158,10 @@ local function CaptureLookupResult(message)
         return
     end
 
-    table.insert(state.lookupResults, message)
+    table.insert(state.lookupResults, {
+        text = message,
+        spellId = state.lookupKind == "spell" and ExtractSpellId(message) or nil,
+    })
     while table.getn(state.lookupResults) > 8 do
         table.remove(state.lookupResults, 1)
     end
@@ -516,9 +550,19 @@ local function BuildLookupPanel(parent)
         else
             line:SetPoint("TOPLEFT", state.lookupResultLines[i - 1], "BOTTOMLEFT", 0, -3)
         end
-        line:SetWidth(620)
+        line:SetWidth(500)
         line:SetTextColor(0.9, 0.9, 0.9)
         state.lookupResultLines[i] = line
+
+        local learn = CreateButton(panel, nil, "Learn", 88, 20)
+        learn:SetPoint("LEFT", line, "RIGHT", 10, 0)
+        learn:SetScript("OnClick", function(self)
+            if self.spellId then
+                RunCommand(".learn " .. self.spellId)
+            end
+        end)
+        learn:Hide()
+        state.lookupResultButtons[i] = learn
     end
 
     local quickLabel = CreateLabel(panel, nil, "Quick actions", "large")
