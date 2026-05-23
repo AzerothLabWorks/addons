@@ -31,7 +31,10 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Server-side `.help` shortcut for the selected command.
 - Name/ID lookup panel for `.lookup item`, `.lookup spell`, `.lookup creature`, `.lookup quest`, and `.lookup teleport`.
 - Captures recent server lookup responses from chat and displays them in the Lookups tab.
-- Spell lookup results include **Learn** buttons when a spell ID can be detected.
+- Spell lookup results include **Learn** and **Aura** buttons when a spell ID can be detected.
+- Item lookup results include **Add xN** and **Add 1** buttons when an item ID can be detected.
+- Quest and creature lookup results include action buttons when IDs can be detected.
+- Money helper converts gold/silver/copper into `.modify money #copper`.
 - Action buttons for `.additem`, `.learn`, `.go creature id`, `.quest add`, and `.teleport`.
 - WotLKDB URL helper for ID-based lookups such as `https://wotlkdb.com/?item=40684`.
 
@@ -57,6 +60,10 @@ Riding
 ```
 
 Click **Lookup Spell**, then use the **Learn** button next to the captured result you want.
+
+For item workflows, set **Count / extra**, search by item name, click **Lookup Item**, then use **Add xN** beside the captured result.
+
+For money, enter gold/silver/copper in the **Money** fields and click **Give**. This runs `.modify money` against the selected player, or yourself if no valid player target is selected.
 
 ## Important Limitation
 

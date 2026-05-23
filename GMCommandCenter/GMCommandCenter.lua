@@ -86,9 +86,16 @@ local function IsNumber(value)
     return value ~= "" and string.find(value, "^%-?%d+$") ~= nil
 end
 
-local function ExtractSpellId(message)
+local function ExtractLookupId(message, kind)
     message = tostring(message or "")
-    local id = string.match(message, "|Hspell:(%d+)")
+    local id
+    if kind == "spell" then
+        id = string.match(message, "|Hspell:(%d+)")
+    elseif kind == "item" then
+        id = string.match(message, "|Hitem:(%d+)")
+    elseif kind == "quest" then
+        id = string.match(message, "|Hquest:(%d+)")
+    end
     if id then
         return id
     end
@@ -100,6 +107,25 @@ local function ExtractSpellId(message)
 
     id = string.match(message, "%f[%d](%d%d%d+)%f[^%d]")
     return id
+end
+
+local function CopperFromMoney(gold, silver, copper)
+    gold = tonumber(Trim(gold)) or 0
+    silver = tonumber(Trim(silver)) or 0
+    copper = tonumber(Trim(copper)) or 0
+    return (gold * 10000) + (silver * 100) + copper
+end
+
+local function GetLookupAmount()
+    if not GMCC_LookupAmount then
+        return "1"
+    end
+
+    local amount = Trim(GMCC_LookupAmount:GetText())
+    if amount == "" then
+        amount = "1"
+    end
+    return amount
 end
 
 local function RefreshLookupResults()
@@ -116,19 +142,48 @@ local function RefreshLookupResults()
 
     for i = 1, 8 do
         local line = state.lookupResultLines[i]
-        local button = state.lookupResultButtons[i]
+        local buttons = state.lookupResultButtons[i]
         local result = state.lookupResults[i]
         if line then
             line:SetText(result and result.text or "")
         end
-        if button then
-            if result and result.spellId then
-                button.spellId = result.spellId
-                button:SetText("Learn " .. result.spellId)
-                button:Show()
-            else
-                button.spellId = nil
-                button:Hide()
+        if buttons then
+            for buttonIndex = 1, table.getn(buttons) do
+                buttons[buttonIndex]:Hide()
+                buttons[buttonIndex].commandBuilder = nil
+            end
+
+            if result and result.id then
+                if result.kind == "spell" then
+                    buttons[1]:SetText("Learn")
+                    buttons[1].commandBuilder = function() return ".learn " .. result.id end
+                    buttons[1]:Show()
+                    buttons[2]:SetText("Aura")
+                    buttons[2].commandBuilder = function() return ".aura " .. result.id end
+                    buttons[2]:Show()
+                elseif result.kind == "item" then
+                    buttons[1]:SetText("Add x" .. GetLookupAmount())
+                    buttons[1].commandBuilder = function() return ".additem " .. result.id .. " " .. GetLookupAmount() end
+                    buttons[1]:Show()
+                    buttons[2]:SetText("Add 1")
+                    buttons[2].commandBuilder = function() return ".additem " .. result.id .. " 1" end
+                    buttons[2]:Show()
+                elseif result.kind == "quest" then
+                    buttons[1]:SetText("Add Quest")
+                    buttons[1].commandBuilder = function() return ".quest add " .. result.id end
+                    buttons[1]:Show()
+                elseif result.kind == "creature" then
+                    buttons[1]:SetText("Spawn")
+                    buttons[1].commandBuilder = function() return ".npc add " .. result.id end
+                    buttons[1]:Show()
+                    buttons[2]:SetText("Go")
+                    buttons[2].commandBuilder = function() return ".go creature id " .. result.id end
+                    buttons[2]:Show()
+                elseif result.kind == "teleport" then
+                    buttons[1]:SetText("Tele")
+                    buttons[1].commandBuilder = function() return ".teleport " .. result.id end
+                    buttons[1]:Show()
+                end
             end
         end
     end
@@ -160,7 +215,8 @@ local function CaptureLookupResult(message)
 
     table.insert(state.lookupResults, {
         text = message,
-        spellId = state.lookupKind == "spell" and ExtractSpellId(message) or nil,
+        kind = state.lookupKind,
+        id = ExtractLookupId(message, state.lookupKind),
     })
     while table.getn(state.lookupResults) > 8 do
         table.remove(state.lookupResults, 1)
@@ -480,6 +536,38 @@ local function BuildLookupPanel(parent)
     GMCC_LookupAmount = CreateEditBox(panel, "GMCC_LookupAmount", 110, 24)
     GMCC_LookupAmount:SetPoint("TOPLEFT", amountLabel, "BOTTOMLEFT", 0, -4)
     GMCC_LookupAmount:SetText("1")
+    GMCC_LookupAmount:SetScript("OnTextChanged", function()
+        RefreshLookupResults()
+    end)
+
+    local moneyLabel = CreateLabel(panel, nil, "Money", "small")
+    moneyLabel:SetPoint("LEFT", amountLabel, "RIGHT", 116, 0)
+    GMCC_GoldBox = CreateEditBox(panel, "GMCC_GoldBox", 46, 24)
+    GMCC_GoldBox:SetPoint("TOPLEFT", moneyLabel, "BOTTOMLEFT", 0, -4)
+    GMCC_GoldBox:SetText("0")
+    local goldText = CreateLabel(panel, nil, "g", "small")
+    goldText:SetPoint("LEFT", GMCC_GoldBox, "RIGHT", 4, 0)
+    GMCC_SilverBox = CreateEditBox(panel, "GMCC_SilverBox", 34, 24)
+    GMCC_SilverBox:SetPoint("LEFT", goldText, "RIGHT", 8, 0)
+    GMCC_SilverBox:SetText("0")
+    local silverText = CreateLabel(panel, nil, "s", "small")
+    silverText:SetPoint("LEFT", GMCC_SilverBox, "RIGHT", 4, 0)
+    GMCC_CopperBox = CreateEditBox(panel, "GMCC_CopperBox", 34, 24)
+    GMCC_CopperBox:SetPoint("LEFT", silverText, "RIGHT", 8, 0)
+    GMCC_CopperBox:SetText("0")
+    local copperText = CreateLabel(panel, nil, "c", "small")
+    copperText:SetPoint("LEFT", GMCC_CopperBox, "RIGHT", 4, 0)
+
+    local giveMoney = CreateButton(panel, nil, "Give", 58, 24)
+    giveMoney:SetPoint("LEFT", copperText, "RIGHT", 8, 0)
+    giveMoney:SetScript("OnClick", function()
+        local copper = CopperFromMoney(GMCC_GoldBox:GetText(), GMCC_SilverBox:GetText(), GMCC_CopperBox:GetText())
+        if copper == 0 then
+            Print("Enter gold, silver, or copper first.")
+            return
+        end
+        RunCommand(".modify money " .. copper)
+    end)
 
     GMCC_UrlBox = CreateEditBox(panel, "GMCC_UrlBox", 420, 24)
     GMCC_UrlBox:SetPoint("TOPLEFT", 2, -90)
@@ -550,19 +638,26 @@ local function BuildLookupPanel(parent)
         else
             line:SetPoint("TOPLEFT", state.lookupResultLines[i - 1], "BOTTOMLEFT", 0, -3)
         end
-        line:SetWidth(500)
+        line:SetWidth(430)
         line:SetTextColor(0.9, 0.9, 0.9)
         state.lookupResultLines[i] = line
 
-        local learn = CreateButton(panel, nil, "Learn", 88, 20)
-        learn:SetPoint("LEFT", line, "RIGHT", 10, 0)
-        learn:SetScript("OnClick", function(self)
-            if self.spellId then
-                RunCommand(".learn " .. self.spellId)
+        state.lookupResultButtons[i] = {}
+        for buttonIndex = 1, 2 do
+            local action = CreateButton(panel, nil, "Action", 86, 20)
+            if buttonIndex == 1 then
+                action:SetPoint("LEFT", line, "RIGHT", 10, 0)
+            else
+                action:SetPoint("LEFT", state.lookupResultButtons[i][buttonIndex - 1], "RIGHT", 6, 0)
             end
-        end)
-        learn:Hide()
-        state.lookupResultButtons[i] = learn
+            action:SetScript("OnClick", function(self)
+                if self.commandBuilder then
+                    RunCommand(self.commandBuilder())
+                end
+            end)
+            action:Hide()
+            state.lookupResultButtons[i][buttonIndex] = action
+        end
     end
 
     local quickLabel = CreateLabel(panel, nil, "Quick actions", "large")
