@@ -9,6 +9,7 @@ local state = {
 }
 
 local categories = { "All", "GM", "Items", "Spells", "Character", "Teleport", "NPCs", "Quests", "Server" }
+local ResetCommandScroll
 
 local function Print(message)
     DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99GMCC|r " .. tostring(message))
@@ -40,6 +41,28 @@ local function RunCommand(command)
     Print("Ran: " .. command)
     GMCommandCenterDB = GMCommandCenterDB or {}
     GMCommandCenterDB.lastCommand = command
+end
+
+local function ToggleMainFrame(text)
+    text = Trim(text)
+    if text ~= "" then
+        state.filter = text
+        if GMCC_FilterBox then
+            ResetCommandScroll()
+            GMCC_FilterBox:SetText(text)
+        end
+    end
+
+    if not GMCommandCenterFrame then
+        Print("UI is still loading. Try /reload, then /gmcc.")
+        return
+    end
+
+    if GMCommandCenterFrame:IsShown() then
+        GMCommandCenterFrame:Hide()
+    else
+        GMCommandCenterFrame:Show()
+    end
 end
 
 local function BuildCommand(entry, args)
@@ -118,7 +141,7 @@ local function RefreshCommandRows()
     GMCC_CountText:SetText(table.getn(commands) .. " commands")
 end
 
-local function ResetCommandScroll()
+ResetCommandScroll = function()
     if GMCC_CommandScroll then
         GMCC_CommandScroll.offset = 0
         if GMCC_CommandScrollScrollBar then
@@ -409,30 +432,17 @@ local function BuildFrame()
     return frame
 end
 
+SLASH_GMCOMMANDCENTER1 = "/gmcc"
+SLASH_GMCOMMANDCENTER2 = "/agm"
+SlashCmdList["GMCOMMANDCENTER"] = ToggleMainFrame
+
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("ADDON_LOADED")
-loader:SetScript("OnEvent", function(_, _, addonName)
+loader:SetScript("OnEvent", function(self, event, addonName)
     if addonName ~= ADDON then
         return
     end
     GMCommandCenterDB = GMCommandCenterDB or {}
     BuildFrame()
-    SLASH_GMCOMMANDCENTER1 = "/gmcc"
-    SLASH_GMCOMMANDCENTER2 = "/agm"
-    SlashCmdList["GMCOMMANDCENTER"] = function(text)
-        text = Trim(text)
-        if text ~= "" then
-            state.filter = text
-            if GMCC_FilterBox then
-                ResetCommandScroll()
-                GMCC_FilterBox:SetText(text)
-            end
-        end
-        if GMCommandCenterFrame:IsShown() then
-            GMCommandCenterFrame:Hide()
-        else
-            GMCommandCenterFrame:Show()
-        end
-    end
     Print("loaded. Type /gmcc or /agm.")
 end)
