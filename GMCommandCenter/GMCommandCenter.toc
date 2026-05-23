@@ -1,0 +1,9 @@
+## Interface: 30300
+## Title: GM Command Center
+## Notes: AzerothCore GM command helper for WotLK 3.3.5a private servers.
+## Author: Codex
+## Version: 0.1.0
+## SavedVariables: GMCommandCenterDB
+
+GMCommandCenter_Data.lua
+GMCommandCenter.lua
