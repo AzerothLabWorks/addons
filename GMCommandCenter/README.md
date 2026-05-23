@@ -29,7 +29,7 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Wildcard-aware command search. Examples: `lookup*`, `*spell`, `tele*name`.
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
-- Money helper on the command page converts gold/silver/copper into `.money #copper`.
+- Money helper on the command page runs `.modify money` using gold/silver/copper input.
 - Quick action buttons for common GM commands.
 
 ## Name Search and Wildcards
@@ -45,7 +45,7 @@ frost*
 
 The addon understands wildcards in its command search.
 
-For money, enter gold/silver/copper in the **Money** fields and click **Give Money**. This runs `.money` against the selected player, or yourself if no valid player target is selected.
+For money, enter gold/silver/copper in the **Money** fields and click **Give Money**. This runs `.modify money` against the selected player. If you do not have a player selected, the addon targets your own character first.
 
 ## Important Limitation
 

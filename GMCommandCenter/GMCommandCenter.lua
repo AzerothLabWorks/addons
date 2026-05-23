@@ -54,6 +54,25 @@ local function CopperFromMoney(gold, silver, copper)
     return (gold * 10000) + (silver * 100) + copper
 end
 
+local function MoneyArgument(gold, silver, copper)
+    gold = tonumber(Trim(gold)) or 0
+    silver = tonumber(Trim(silver)) or 0
+    copper = tonumber(Trim(copper)) or 0
+
+    local parts = {}
+    if gold ~= 0 then
+        table.insert(parts, gold .. "g")
+    end
+    if silver ~= 0 then
+        table.insert(parts, silver .. "s")
+    end
+    if copper ~= 0 then
+        table.insert(parts, copper .. "c")
+    end
+
+    return table.concat(parts, " ")
+end
+
 local function RunCommand(command)
     command = Trim(command)
     if command == "" then
@@ -360,7 +379,10 @@ local function BuildCommandsPanel(parent)
             Print("Enter gold, silver, or copper first.")
             return
         end
-        RunCommand(".money " .. copper)
+        if not UnitIsPlayer("target") then
+            TargetUnit("player")
+        end
+        RunCommand(".modify money " .. MoneyArgument(GMCC_GoldBox:GetText(), GMCC_SilverBox:GetText(), GMCC_CopperBox:GetText()))
     end)
 end
 
