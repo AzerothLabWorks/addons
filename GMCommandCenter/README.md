@@ -48,7 +48,7 @@ frost*
 
 The addon understands wildcards in its command search.
 
-For money, enter the copper amount in the **#money** field and click **Give Money**. The addon runs `.modify money #money` against the selected player. If you do not have a player selected, the addon targets your own character first, waits briefly for selection to update, then sends the command.
+For money, enter the copper amount in the **#money** field and click **Give Money**. The addon immediately runs `.modify money #money`; select the target player first because AzerothCore applies this command to the selected player.
 
 ## Class Search
 

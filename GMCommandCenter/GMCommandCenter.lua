@@ -51,18 +51,6 @@ local function WildcardMatch(haystack, needle)
     return string.find(haystack, "^" .. pattern .. "$") ~= nil
 end
 
-local function RunAfter(delay, callback)
-    local frame = CreateFrame("Frame")
-    local elapsed = 0
-    frame:SetScript("OnUpdate", function(self, elapsedArg)
-        elapsed = elapsed + (elapsedArg or arg1 or 0)
-        if elapsed >= delay then
-            self:SetScript("OnUpdate", nil)
-            callback()
-        end
-    end)
-end
-
 local function NormalizeClassName(value)
     value = string.lower(Trim(value))
     if value == "dk" or value == "deathknight" or value == "death knight" then
@@ -245,31 +233,13 @@ local function RunCommand(command)
 end
 
 local function GiveMoney()
-    local money = tonumber(Trim(GMCC_MoneyBox and GMCC_MoneyBox:GetText() or ""))
-    if not money or money == 0 then
-        Print("Enter a #money copper amount first.")
+    local money = Trim(GMCC_MoneyBox and GMCC_MoneyBox:GetText() or "")
+    if not string.match(money, "^%-?%d+$") or money == "0" then
+        Print("Enter a non-zero #money copper amount first.")
         return
     end
 
-    money = math.floor(money)
-    local command = ".modify money " .. money
-    if UnitIsPlayer("target") then
-        Print("Giving money to selected player: " .. (UnitName("target") or "target"))
-        RunCommand(command)
-        return
-    end
-
-    Print("No player selected; targeting yourself first.")
-    TargetUnit("player")
-    RunAfter(0.25, function()
-        if not UnitIsPlayer("target") then
-            Print("No player target found. Select your character or another player and try again.")
-            return
-        end
-
-        Print("Giving money to selected player: " .. (UnitName("target") or "target"))
-        RunCommand(command)
-    end)
+    RunCommand(".modify money " .. money)
 end
 
 local function ToggleMainFrame(text)
