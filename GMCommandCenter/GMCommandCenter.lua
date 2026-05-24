@@ -51,8 +51,44 @@ local function WildcardMatch(haystack, needle)
     return string.find(haystack, "^" .. pattern .. "$") ~= nil
 end
 
+local function BitAnd(left, right)
+    if bit and bit.band then
+        return bit.band(left, right)
+    end
+
+    local result = 0
+    local bitValue = 1
+    left = math.floor(left or 0)
+    right = math.floor(right or 0)
+    while left > 0 and right > 0 do
+        local leftBit = math.mod(left, 2)
+        local rightBit = math.mod(right, 2)
+        if leftBit == 1 and rightBit == 1 then
+            result = result + bitValue
+        end
+        left = math.floor(left / 2)
+        right = math.floor(right / 2)
+        bitValue = bitValue * 2
+    end
+    return result
+end
+
+local function PlayerClassName()
+    local _, classToken = UnitClass("player")
+    if classToken == "DEATHKNIGHT" then
+        return "Death Knight"
+    end
+    if classToken then
+        return string.sub(classToken, 1, 1) .. string.lower(string.sub(classToken, 2))
+    end
+    return "All"
+end
+
 local function NormalizeClassName(value)
     value = string.lower(Trim(value))
+    if value == "me" or value == "player" then
+        return PlayerClassName()
+    end
     if value == "dk" or value == "deathknight" or value == "death knight" then
         return "Death Knight"
     end
@@ -85,11 +121,7 @@ local function ItemAllowedForClass(item, className)
         return true
     end
 
-    if bit and bit.band then
-        return bit.band(item.mask, mask) ~= 0
-    end
-
-    return math.mod(math.floor(item.mask / mask), 2) == 1
+    return BitAnd(item.mask, mask) ~= 0
 end
 
 local function GetItemLevelFilter()
@@ -111,6 +143,36 @@ local function ItemAllowedForLevel(item, level)
     end
 
     return (tonumber(item.rl) or 0) <= level
+end
+
+local function ItemAllowedForFaction(item)
+    if item.race == -1 then
+        return true
+    end
+
+    local faction = UnitFactionGroup("player")
+    local mask = GMCC_FACTION_RACE_MASKS and GMCC_FACTION_RACE_MASKS[faction]
+    if not mask then
+        return true
+    end
+
+    return BitAnd(item.race, mask) ~= 0
+end
+
+local function ItemDetails(item)
+    local details = { item.type }
+    if item.inv and item.inv ~= "" and item.inv ~= "Non-equip" then
+        table.insert(details, item.inv)
+    end
+    if item.q and item.q ~= "" then
+        table.insert(details, item.q)
+    end
+    table.insert(details, "ilvl " .. item.il)
+    table.insert(details, "req " .. item.rl)
+    if item.skill and item.skill ~= "" then
+        table.insert(details, item.skill)
+    end
+    return table.concat(details, " | ")
 end
 
 local function RefreshClassResults()
@@ -179,7 +241,7 @@ local function SearchClassSpells()
     RefreshClassResults()
 end
 
-local function SearchClassItems()
+local function SearchClassItems(mountsOnly)
     state.classResults = {}
     state.classStatusText = nil
     local className = NormalizeClassName(GMCC_ClassBox and GMCC_ClassBox:GetText() or "")
@@ -198,11 +260,11 @@ local function SearchClassItems()
     end
 
     for _, item in ipairs(GMCC_CLASS_ITEMS or {}) do
-        if ItemAllowedForClass(item, className) and ItemAllowedForLevel(item, level) then
-            local haystack = item.name .. " " .. item.type .. " " .. item.id
+        if (not mountsOnly or item.mount) and ItemAllowedForClass(item, className) and ItemAllowedForLevel(item, level) and ItemAllowedForFaction(item) then
+            local haystack = item.name .. " " .. item.type .. " " .. (item.inv or "") .. " " .. (item.q or "") .. " " .. (item.skill or "") .. " " .. item.id
             if WildcardMatch(haystack, query) then
                 table.insert(state.classResults, {
-                    text = item.id .. " - " .. item.name .. " | " .. item.type .. " | ilvl " .. item.il .. " | req " .. item.rl,
+                    text = item.id .. " - " .. item.name .. " | " .. ItemDetails(item),
                     action = "Add",
                     command = ".additem " .. item.id .. " 1",
                 })
@@ -230,17 +292,6 @@ local function RunCommand(command)
     Print("Ran: " .. command)
     GMCommandCenterDB = GMCommandCenterDB or {}
     GMCommandCenterDB.lastCommand = command
-end
-
-local function BuildMoneyCommand()
-    local money = Trim(GMCC_MoneyBox and GMCC_MoneyBox:GetText() or "")
-    if not string.match(money, "^%-?%d+$") or money == "0" then
-        Print("Enter a non-zero #money copper amount first.")
-        return
-    end
-
-    SetEditBoxText(GMCC_CommandBox, ".modify money " .. money)
-    Print("Money command ready. Select a player, then click Run.")
 end
 
 local function ToggleMainFrame(text)
@@ -503,27 +554,14 @@ local function BuildCommandsPanel(parent)
         end
     end)
 
-    local moneyLabel = CreateLabel(panel, nil, "Money", "large")
-    moneyLabel:SetPoint("TOPLEFT", run, "BOTTOMLEFT", 0, -22)
-
-    local moneyArgLabel = CreateLabel(panel, nil, "#money", "small")
-    moneyArgLabel:SetPoint("TOPLEFT", moneyLabel, "BOTTOMLEFT", 0, -6)
-    GMCC_MoneyBox = CreateEditBox(panel, "GMCC_MoneyBox", 110, 24)
-    GMCC_MoneyBox:SetPoint("TOPLEFT", moneyArgLabel, "BOTTOMLEFT", 0, -4)
-    GMCC_MoneyBox:SetText("10000")
-
-    local moneyButton = CreateButton(panel, nil, "Money", 82, 24)
-    moneyButton:SetPoint("LEFT", GMCC_MoneyBox, "RIGHT", 12, 0)
-    moneyButton:SetScript("OnClick", BuildMoneyCommand)
-
     local classLabel = CreateLabel(panel, nil, "Class Search", "large")
-    classLabel:SetPoint("TOPLEFT", moneyLabel, "BOTTOMLEFT", 0, -44)
+    classLabel:SetPoint("TOPLEFT", run, "BOTTOMLEFT", 0, -22)
 
     local classNameLabel = CreateLabel(panel, nil, "Class", "small")
     classNameLabel:SetPoint("TOPLEFT", classLabel, "BOTTOMLEFT", 0, -6)
     GMCC_ClassBox = CreateEditBox(panel, "GMCC_ClassBox", 110, 24)
     GMCC_ClassBox:SetPoint("TOPLEFT", classNameLabel, "BOTTOMLEFT", 0, -4)
-    GMCC_ClassBox:SetText("Mage")
+    GMCC_ClassBox:SetText(PlayerClassName())
 
     local searchLabel = CreateLabel(panel, nil, "Name or ID", "small")
     searchLabel:SetPoint("LEFT", classNameLabel, "RIGHT", 84, 0)
@@ -556,10 +594,18 @@ local function BuildCommandsPanel(parent)
 
     local itemSearch = CreateButton(panel, nil, "Items", 72, 24)
     itemSearch:SetPoint("LEFT", spellSearch, "RIGHT", 8, 0)
-    itemSearch:SetScript("OnClick", SearchClassItems)
+    itemSearch:SetScript("OnClick", function()
+        SearchClassItems(false)
+    end)
+
+    local mountSearch = CreateButton(panel, nil, "Mounts", 72, 24)
+    mountSearch:SetPoint("LEFT", itemSearch, "RIGHT", 8, 0)
+    mountSearch:SetScript("OnClick", function()
+        SearchClassItems(true)
+    end)
 
     GMCC_ClassStatus = CreateLabel(panel, "GMCC_ClassStatus", "No class results yet.", "small")
-    GMCC_ClassStatus:SetPoint("LEFT", itemSearch, "RIGHT", 12, 0)
+    GMCC_ClassStatus:SetPoint("LEFT", mountSearch, "RIGHT", 12, 0)
     GMCC_ClassStatus:SetTextColor(0.72, 0.72, 0.72)
 
     for i = 1, 5 do
@@ -569,7 +615,7 @@ local function BuildCommandsPanel(parent)
         else
             line:SetPoint("TOPLEFT", state.classResultLines[i - 1], "BOTTOMLEFT", 0, -3)
         end
-        line:SetWidth(270)
+        line:SetWidth(500)
         state.classResultLines[i] = line
 
         local action = CreateButton(panel, nil, "Run", 62, 20)

@@ -1,6 +1,6 @@
 # GM Command Center
 
-GM Command Center is a WotLK 3.3.5a addon for AzerothCore GM workflows. It gives you an in-game panel for common GM commands, command search, quick actions, and a simple money helper.
+GM Command Center is a WotLK 3.3.5a addon for AzerothCore GM workflows. It gives you an in-game panel for common GM commands, command search, quick actions, and class-aware lookup helpers.
 
 ## Install
 
@@ -29,10 +29,9 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Wildcard-aware command search. Examples: `lookup*`, `*spell`, `tele*name`.
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
-- Money helper on the command page builds `.modify money #money` in the command box.
 - Class-aware spell search with one-click `.learn` actions.
-- Class-aware item search with one-click `.additem` actions.
-- Optional item filtering by the current player level or a manual level.
+- Class-aware item search with one-click `.additem` actions and level/faction usability filtering.
+- Mount-only item search with one-click `.additem` actions.
 - Quick action buttons for common GM commands.
 
 ## Name Search and Wildcards
@@ -48,7 +47,7 @@ frost*
 
 The addon understands wildcards in its command search.
 
-For money, enter the copper amount in the **#money** field and click **Money**. The addon fills the command box with `.modify money #money`; select the target player first, then click **Run**.
+For money commands, use the command browser's **Character** category and select `modify money`.
 
 ## Class Search
 
@@ -68,11 +67,15 @@ Spells
 Class: Paladin
 Search: plate
 Items
+
+Class: All
+Search: swift
+Mounts
 ```
 
-Supported class names are `Warrior`, `Paladin`, `Hunter`, `Rogue`, `Priest`, `Death Knight`, `Shaman`, `Mage`, `Warlock`, and `Druid`. You can also use `All` or `*` to search without a class filter.
+Supported class names are `Warrior`, `Paladin`, `Hunter`, `Rogue`, `Priest`, `Death Knight`, `Shaman`, `Mage`, `Warlock`, and `Druid`. The class field defaults to your current character's class. You can also use `me` or `player` for your current class, or `All` / `*` to search without a class filter.
 
-For item searches, **Use my level** is enabled by default. When it is checked, the addon only returns items whose required level is less than or equal to your current character level. Uncheck it and enter a manual level to search for items suitable for another level range.
+For item and mount searches, **Use my level** is enabled by default. When it is checked, the addon only returns items whose required level is less than or equal to your current character level. Uncheck it and enter a manual level to search for items suitable for another level range. Item and mount searches also filter by class and by your current faction when the item has race/faction restrictions.
 
 ## Important Limitation
 
