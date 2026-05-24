@@ -216,12 +216,6 @@ local function BuildCommandsPanel(parent)
     GMCC_CountText = CreateLabel(panel, "GMCC_CountText", "", "small")
     GMCC_CountText:SetPoint("LEFT", GMCC_FilterBox, "RIGHT", 14, 0)
 
-    local mountsButton = CreateButton(panel, nil, "Mounts", 82, 24)
-    mountsButton:SetPoint("TOPRIGHT", -4, -2)
-    mountsButton:SetScript("OnClick", function()
-        RunCommand(".lookup item mount")
-    end)
-
     local lastButton
     for i, cat in ipairs(categories) do
         local button = CreateButton(panel, "GMCC_Cat" .. i, cat, 70, 22)
@@ -238,6 +232,15 @@ local function BuildCommandsPanel(parent)
             RefreshCommandRows()
         end)
         lastButton = button
+
+        if cat == "Spells" then
+            local mountButton = CreateButton(panel, nil, "Mount", 70, 22)
+            mountButton:SetPoint("LEFT", lastButton, "RIGHT", 4, 0)
+            mountButton:SetScript("OnClick", function()
+                RunCommand(".lookup spell mount")
+            end)
+            lastButton = mountButton
+        end
     end
 
     local listFrame = CreateFrame("Frame", nil, panel)

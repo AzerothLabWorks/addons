@@ -29,7 +29,7 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Wildcard-aware command search. Examples: `lookup*`, `*spell`, `tele*name`.
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
-- Top-level **Mounts** button that runs `.lookup item mount` and returns results in chat.
+- **Mount** button next to **Spells** that runs `.lookup spell mount` and returns results in chat.
 - Quick action buttons for common GM commands.
 
 ## Name Search and Wildcards
@@ -49,10 +49,10 @@ For money commands, use the command browser's **Character** category and select 
 
 ## Quick Lookups
 
-Use the **Mounts** button at the top of the addon to run the server-side mount item lookup:
+Use the **Mount** button next to **Spells** to run the server-side mount spell lookup:
 
 ```text
-.lookup item mount
+.lookup spell mount
 ```
 
 Results are shown in chat by AzerothCore instead of being limited by addon result rows.
