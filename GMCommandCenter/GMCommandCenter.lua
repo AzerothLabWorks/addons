@@ -51,13 +51,6 @@ local function WildcardMatch(haystack, needle)
     return string.find(haystack, "^" .. pattern .. "$") ~= nil
 end
 
-local function CopperFromMoney(gold, silver, copper)
-    gold = tonumber(Trim(gold)) or 0
-    silver = tonumber(Trim(silver)) or 0
-    copper = tonumber(Trim(copper)) or 0
-    return (gold * 10000) + (silver * 100) + copper
-end
-
 local function RunAfter(delay, callback)
     local frame = CreateFrame("Frame")
     local elapsed = 0
@@ -252,13 +245,14 @@ local function RunCommand(command)
 end
 
 local function GiveMoney()
-    local copper = CopperFromMoney(GMCC_GoldBox:GetText(), GMCC_SilverBox:GetText(), GMCC_CopperBox:GetText())
-    if copper == 0 then
-        Print("Enter gold, silver, or copper first.")
+    local money = tonumber(Trim(GMCC_MoneyBox and GMCC_MoneyBox:GetText() or ""))
+    if not money or money == 0 then
+        Print("Enter a #money copper amount first.")
         return
     end
 
-    local command = ".modify money " .. copper
+    money = math.floor(money)
+    local command = ".modify money " .. money
     if UnitIsPlayer("target") then
         Print("Giving money to selected player: " .. (UnitName("target") or "target"))
         RunCommand(command)
@@ -541,26 +535,14 @@ local function BuildCommandsPanel(parent)
     local moneyLabel = CreateLabel(panel, nil, "Money", "large")
     moneyLabel:SetPoint("TOPLEFT", run, "BOTTOMLEFT", 0, -22)
 
-    GMCC_GoldBox = CreateEditBox(panel, "GMCC_GoldBox", 54, 24)
-    GMCC_GoldBox:SetPoint("TOPLEFT", moneyLabel, "BOTTOMLEFT", 0, -6)
-    GMCC_GoldBox:SetText("0")
-    local goldText = CreateLabel(panel, nil, "g", "small")
-    goldText:SetPoint("LEFT", GMCC_GoldBox, "RIGHT", 4, 0)
-
-    GMCC_SilverBox = CreateEditBox(panel, "GMCC_SilverBox", 40, 24)
-    GMCC_SilverBox:SetPoint("LEFT", goldText, "RIGHT", 10, 0)
-    GMCC_SilverBox:SetText("0")
-    local silverText = CreateLabel(panel, nil, "s", "small")
-    silverText:SetPoint("LEFT", GMCC_SilverBox, "RIGHT", 4, 0)
-
-    GMCC_CopperBox = CreateEditBox(panel, "GMCC_CopperBox", 40, 24)
-    GMCC_CopperBox:SetPoint("LEFT", silverText, "RIGHT", 10, 0)
-    GMCC_CopperBox:SetText("0")
-    local copperText = CreateLabel(panel, nil, "c", "small")
-    copperText:SetPoint("LEFT", GMCC_CopperBox, "RIGHT", 4, 0)
+    local moneyArgLabel = CreateLabel(panel, nil, "#money", "small")
+    moneyArgLabel:SetPoint("TOPLEFT", moneyLabel, "BOTTOMLEFT", 0, -6)
+    GMCC_MoneyBox = CreateEditBox(panel, "GMCC_MoneyBox", 110, 24)
+    GMCC_MoneyBox:SetPoint("TOPLEFT", moneyArgLabel, "BOTTOMLEFT", 0, -4)
+    GMCC_MoneyBox:SetText("10000")
 
     local giveMoney = CreateButton(panel, nil, "Give Money", 110, 24)
-    giveMoney:SetPoint("LEFT", copperText, "RIGHT", 12, 0)
+    giveMoney:SetPoint("LEFT", GMCC_MoneyBox, "RIGHT", 12, 0)
     giveMoney:SetScript("OnClick", GiveMoney)
 
     local classLabel = CreateLabel(panel, nil, "Class Search", "large")
