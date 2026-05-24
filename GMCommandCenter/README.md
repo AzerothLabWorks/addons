@@ -30,6 +30,8 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
 - Money helper on the command page runs `.modify money` using gold/silver/copper input.
+- Class-aware spell search with one-click `.learn` actions.
+- Class-aware item search with one-click `.additem` actions.
 - Quick action buttons for common GM commands.
 
 ## Name Search and Wildcards
@@ -46,6 +48,28 @@ frost*
 The addon understands wildcards in its command search.
 
 For money, enter gold/silver/copper in the **Money** fields and click **Give Money**. This runs `.modify money` against the selected player. If you do not have a player selected, the addon targets your own character first.
+
+## Class Search
+
+Use **Class Search** on the command page to filter spells and items by class.
+
+Examples:
+
+```text
+Class: Mage
+Search: frost
+Spells
+
+Class: Priest
+Search: heal
+Spells
+
+Class: Paladin
+Search: plate
+Items
+```
+
+Supported class names are `Warrior`, `Paladin`, `Hunter`, `Rogue`, `Priest`, `Death Knight`, `Shaman`, `Mage`, `Warlock`, and `Druid`. You can also use `All` or `*` to search without a class filter.
 
 ## Important Limitation
 
