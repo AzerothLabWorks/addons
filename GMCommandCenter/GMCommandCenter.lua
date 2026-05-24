@@ -58,23 +58,12 @@ local function CopperFromMoney(gold, silver, copper)
     return (gold * 10000) + (silver * 100) + copper
 end
 
-local function MoneyArgument(gold, silver, copper)
-    gold = tonumber(Trim(gold)) or 0
-    silver = tonumber(Trim(silver)) or 0
-    copper = tonumber(Trim(copper)) or 0
-
-    local parts = {}
-    if gold ~= 0 then
-        table.insert(parts, gold .. "g")
-    end
-    if silver ~= 0 then
-        table.insert(parts, silver .. "s")
-    end
-    if copper ~= 0 then
-        table.insert(parts, copper .. "c")
-    end
-
-    return table.concat(parts, " ")
+local function RunOnNextFrame(callback)
+    local frame = CreateFrame("Frame")
+    frame:SetScript("OnUpdate", function(self)
+        self:SetScript("OnUpdate", nil)
+        callback()
+    end)
 end
 
 local function NormalizeClassName(value)
@@ -256,6 +245,25 @@ local function RunCommand(command)
     Print("Ran: " .. command)
     GMCommandCenterDB = GMCommandCenterDB or {}
     GMCommandCenterDB.lastCommand = command
+end
+
+local function GiveMoney()
+    local copper = CopperFromMoney(GMCC_GoldBox:GetText(), GMCC_SilverBox:GetText(), GMCC_CopperBox:GetText())
+    if copper == 0 then
+        Print("Enter gold, silver, or copper first.")
+        return
+    end
+
+    local command = ".modify money " .. copper
+    if UnitIsPlayer("target") then
+        RunCommand(command)
+        return
+    end
+
+    TargetUnit("player")
+    RunOnNextFrame(function()
+        RunCommand(command)
+    end)
 end
 
 local function ToggleMainFrame(text)
@@ -541,17 +549,7 @@ local function BuildCommandsPanel(parent)
 
     local giveMoney = CreateButton(panel, nil, "Give Money", 110, 24)
     giveMoney:SetPoint("LEFT", copperText, "RIGHT", 12, 0)
-    giveMoney:SetScript("OnClick", function()
-        local copper = CopperFromMoney(GMCC_GoldBox:GetText(), GMCC_SilverBox:GetText(), GMCC_CopperBox:GetText())
-        if copper == 0 then
-            Print("Enter gold, silver, or copper first.")
-            return
-        end
-        if not UnitIsPlayer("target") then
-            TargetUnit("player")
-        end
-        RunCommand(".modify money " .. MoneyArgument(GMCC_GoldBox:GetText(), GMCC_SilverBox:GetText(), GMCC_CopperBox:GetText()))
-    end)
+    giveMoney:SetScript("OnClick", GiveMoney)
 
     local classLabel = CreateLabel(panel, nil, "Class Search", "large")
     classLabel:SetPoint("TOPLEFT", moneyLabel, "BOTTOMLEFT", 0, -44)
