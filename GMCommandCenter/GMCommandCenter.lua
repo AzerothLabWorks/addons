@@ -232,14 +232,15 @@ local function RunCommand(command)
     GMCommandCenterDB.lastCommand = command
 end
 
-local function GiveMoney()
+local function BuildMoneyCommand()
     local money = Trim(GMCC_MoneyBox and GMCC_MoneyBox:GetText() or "")
     if not string.match(money, "^%-?%d+$") or money == "0" then
         Print("Enter a non-zero #money copper amount first.")
         return
     end
 
-    RunCommand(".modify money " .. money)
+    SetEditBoxText(GMCC_CommandBox, ".modify money " .. money)
+    Print("Money command ready. Select a player, then click Run.")
 end
 
 local function ToggleMainFrame(text)
@@ -511,9 +512,9 @@ local function BuildCommandsPanel(parent)
     GMCC_MoneyBox:SetPoint("TOPLEFT", moneyArgLabel, "BOTTOMLEFT", 0, -4)
     GMCC_MoneyBox:SetText("10000")
 
-    local giveMoney = CreateButton(panel, nil, "Give Money", 110, 24)
-    giveMoney:SetPoint("LEFT", GMCC_MoneyBox, "RIGHT", 12, 0)
-    giveMoney:SetScript("OnClick", GiveMoney)
+    local moneyButton = CreateButton(panel, nil, "Money", 82, 24)
+    moneyButton:SetPoint("LEFT", GMCC_MoneyBox, "RIGHT", 12, 0)
+    moneyButton:SetScript("OnClick", BuildMoneyCommand)
 
     local classLabel = CreateLabel(panel, nil, "Class Search", "large")
     classLabel:SetPoint("TOPLEFT", moneyLabel, "BOTTOMLEFT", 0, -44)

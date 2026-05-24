@@ -29,7 +29,7 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Wildcard-aware command search. Examples: `lookup*`, `*spell`, `tele*name`.
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
-- Money helper on the command page runs `.modify money #money`.
+- Money helper on the command page builds `.modify money #money` in the command box.
 - Class-aware spell search with one-click `.learn` actions.
 - Class-aware item search with one-click `.additem` actions.
 - Optional item filtering by the current player level or a manual level.
@@ -48,7 +48,7 @@ frost*
 
 The addon understands wildcards in its command search.
 
-For money, enter the copper amount in the **#money** field and click **Give Money**. The addon immediately runs `.modify money #money`; select the target player first because AzerothCore applies this command to the selected player.
+For money, enter the copper amount in the **#money** field and click **Money**. The addon fills the command box with `.modify money #money`; select the target player first, then click **Run**.
 
 ## Class Search
 
