@@ -32,6 +32,7 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Money helper on the command page runs `.modify money` using gold/silver/copper input.
 - Class-aware spell search with one-click `.learn` actions.
 - Class-aware item search with one-click `.additem` actions.
+- Optional item filtering by the current player level or a manual level.
 - Quick action buttons for common GM commands.
 
 ## Name Search and Wildcards
@@ -70,6 +71,8 @@ Items
 ```
 
 Supported class names are `Warrior`, `Paladin`, `Hunter`, `Rogue`, `Priest`, `Death Knight`, `Shaman`, `Mage`, `Warlock`, and `Druid`. You can also use `All` or `*` to search without a class filter.
+
+For item searches, **Use my level** is enabled by default. When it is checked, the addon only returns items whose required level is less than or equal to your current character level. Uncheck it and enter a manual level to search for items suitable for another level range.
 
 ## Important Limitation
 

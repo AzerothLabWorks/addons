@@ -9,6 +9,7 @@ local state = {
     classResults = {},
     classResultLines = {},
     classResultButtons = {},
+    classStatusText = nil,
 }
 
 local categories = { "All", "GM", "Items", "Spells", "Character", "Teleport", "NPCs", "Quests", "Server" }
@@ -117,6 +118,27 @@ local function ItemAllowedForClass(item, className)
     return math.mod(math.floor(item.mask / mask), 2) == 1
 end
 
+local function GetItemLevelFilter()
+    if GMCC_UsePlayerLevelCheck and GMCC_UsePlayerLevelCheck:GetChecked() then
+        return UnitLevel("player") or 0
+    end
+
+    local value = tonumber(Trim(GMCC_ClassLevelBox and GMCC_ClassLevelBox:GetText() or ""))
+    if not value or value < 1 then
+        return nil
+    end
+
+    return math.floor(value)
+end
+
+local function ItemAllowedForLevel(item, level)
+    if not level then
+        return true
+    end
+
+    return (tonumber(item.rl) or 0) <= level
+end
+
 local function RefreshClassResults()
     if not GMCC_ClassStatus then
         return
@@ -124,7 +146,7 @@ local function RefreshClassResults()
 
     local count = table.getn(state.classResults)
     if count == 0 then
-        GMCC_ClassStatus:SetText("No class results yet.")
+        GMCC_ClassStatus:SetText(state.classStatusText or "No class results yet.")
     else
         GMCC_ClassStatus:SetText(count .. " results")
     end
@@ -151,9 +173,10 @@ end
 
 local function SearchClassSpells()
     state.classResults = {}
+    state.classStatusText = nil
     local className = NormalizeClassName(GMCC_ClassBox and GMCC_ClassBox:GetText() or "")
     if not className then
-        GMCC_ClassStatus:SetText("Unknown class.")
+        state.classStatusText = "Unknown class."
         RefreshClassResults()
         return
     end
@@ -184,12 +207,15 @@ end
 
 local function SearchClassItems()
     state.classResults = {}
+    state.classStatusText = nil
     local className = NormalizeClassName(GMCC_ClassBox and GMCC_ClassBox:GetText() or "")
     if not className then
-        GMCC_ClassStatus:SetText("Unknown class.")
+        state.classStatusText = "Unknown class."
         RefreshClassResults()
         return
     end
+
+    local level = GetItemLevelFilter()
 
     local query = GMCC_ClassSearchBox and GMCC_ClassSearchBox:GetText() or ""
     query = Trim(query)
@@ -198,7 +224,7 @@ local function SearchClassItems()
     end
 
     for _, item in ipairs(GMCC_CLASS_ITEMS or {}) do
-        if ItemAllowedForClass(item, className) then
+        if ItemAllowedForClass(item, className) and ItemAllowedForLevel(item, level) then
             local haystack = item.name .. " " .. item.type .. " " .. item.id
             if WildcardMatch(haystack, query) then
                 table.insert(state.classResults, {
@@ -541,6 +567,25 @@ local function BuildCommandsPanel(parent)
     GMCC_ClassSearchBox = CreateEditBox(panel, "GMCC_ClassSearchBox", 170, 24)
     GMCC_ClassSearchBox:SetPoint("TOPLEFT", searchLabel, "BOTTOMLEFT", 0, -4)
     GMCC_ClassSearchBox:SetText("*")
+
+    local levelLabel = CreateLabel(panel, nil, "Level", "small")
+    levelLabel:SetPoint("LEFT", searchLabel, "RIGHT", 156, 0)
+    GMCC_ClassLevelBox = CreateEditBox(panel, "GMCC_ClassLevelBox", 46, 24)
+    GMCC_ClassLevelBox:SetPoint("TOPLEFT", levelLabel, "BOTTOMLEFT", 0, -4)
+    GMCC_ClassLevelBox:SetText(tostring(UnitLevel("player") or 80))
+
+    GMCC_UsePlayerLevelCheck = CreateFrame("CheckButton", "GMCC_UsePlayerLevelCheck", panel, "UICheckButtonTemplate")
+    GMCC_UsePlayerLevelCheck:SetWidth(24)
+    GMCC_UsePlayerLevelCheck:SetHeight(24)
+    GMCC_UsePlayerLevelCheck:SetPoint("LEFT", GMCC_ClassLevelBox, "RIGHT", 6, 0)
+    GMCC_UsePlayerLevelCheck:SetChecked(true)
+    GMCC_UsePlayerLevelCheck:SetScript("OnClick", function(self)
+        if self:GetChecked() and GMCC_ClassLevelBox then
+            GMCC_ClassLevelBox:SetText(tostring(UnitLevel("player") or 80))
+        end
+    end)
+    local useLevelText = CreateLabel(panel, nil, "Use my level", "small")
+    useLevelText:SetPoint("LEFT", GMCC_UsePlayerLevelCheck, "RIGHT", 0, 0)
 
     local spellSearch = CreateButton(panel, nil, "Spells", 72, 24)
     spellSearch:SetPoint("TOPLEFT", GMCC_ClassBox, "BOTTOMLEFT", 0, -8)
