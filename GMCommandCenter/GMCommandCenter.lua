@@ -58,11 +58,15 @@ local function CopperFromMoney(gold, silver, copper)
     return (gold * 10000) + (silver * 100) + copper
 end
 
-local function RunOnNextFrame(callback)
+local function RunAfter(delay, callback)
     local frame = CreateFrame("Frame")
-    frame:SetScript("OnUpdate", function(self)
-        self:SetScript("OnUpdate", nil)
-        callback()
+    local elapsed = 0
+    frame:SetScript("OnUpdate", function(self, elapsedArg)
+        elapsed = elapsed + (elapsedArg or arg1 or 0)
+        if elapsed >= delay then
+            self:SetScript("OnUpdate", nil)
+            callback()
+        end
     end)
 end
 
@@ -256,12 +260,20 @@ local function GiveMoney()
 
     local command = ".modify money " .. copper
     if UnitIsPlayer("target") then
+        Print("Giving money to selected player: " .. (UnitName("target") or "target"))
         RunCommand(command)
         return
     end
 
+    Print("No player selected; targeting yourself first.")
     TargetUnit("player")
-    RunOnNextFrame(function()
+    RunAfter(0.25, function()
+        if not UnitIsPlayer("target") then
+            Print("No player target found. Select your character or another player and try again.")
+            return
+        end
+
+        Print("Giving money to selected player: " .. (UnitName("target") or "target"))
         RunCommand(command)
     end)
 end

@@ -48,7 +48,7 @@ frost*
 
 The addon understands wildcards in its command search.
 
-For money, enter gold/silver/copper in the **Money** fields and click **Give Money**. The addon converts that amount to copper and runs `.modify money #copper` against the selected player. If you do not have a player selected, the addon targets your own character first and sends the command on the next frame.
+For money, enter gold/silver/copper in the **Money** fields and click **Give Money**. The addon converts that amount to copper and runs `.modify money #copper` against the selected player. If you do not have a player selected, the addon targets your own character first, waits briefly for selection to update, then sends the command.
 
 ## Class Search
 
