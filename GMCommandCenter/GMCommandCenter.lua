@@ -6,10 +6,6 @@ local state = {
     category = "All",
     tab = "commands",
     rows = {},
-    classResults = {},
-    classResultLines = {},
-    classResultButtons = {},
-    classStatusText = nil,
 }
 
 local categories = { "All", "GM", "Items", "Spells", "Character", "Teleport", "NPCs", "Quests", "Server" }
@@ -49,232 +45,6 @@ local function WildcardMatch(haystack, needle)
         pattern = pattern .. ".*"
     end
     return string.find(haystack, "^" .. pattern .. "$") ~= nil
-end
-
-local function BitAnd(left, right)
-    if bit and bit.band then
-        return bit.band(left, right)
-    end
-
-    local result = 0
-    local bitValue = 1
-    left = math.floor(left or 0)
-    right = math.floor(right or 0)
-    while left > 0 and right > 0 do
-        local leftBit = math.mod(left, 2)
-        local rightBit = math.mod(right, 2)
-        if leftBit == 1 and rightBit == 1 then
-            result = result + bitValue
-        end
-        left = math.floor(left / 2)
-        right = math.floor(right / 2)
-        bitValue = bitValue * 2
-    end
-    return result
-end
-
-local function PlayerClassName()
-    local _, classToken = UnitClass("player")
-    if classToken == "DEATHKNIGHT" then
-        return "Death Knight"
-    end
-    if classToken then
-        return string.sub(classToken, 1, 1) .. string.lower(string.sub(classToken, 2))
-    end
-    return "All"
-end
-
-local function NormalizeClassName(value)
-    value = string.lower(Trim(value))
-    if value == "me" or value == "player" then
-        return PlayerClassName()
-    end
-    if value == "dk" or value == "deathknight" or value == "death knight" then
-        return "Death Knight"
-    end
-
-    local names = { "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid" }
-    for _, name in ipairs(names) do
-        if string.lower(name) == value then
-            return name
-        end
-    end
-
-    if value == "all" or value == "*" or value == "" then
-        return "All"
-    end
-
-    return nil
-end
-
-local function ItemAllowedForClass(item, className)
-    if className == "All" then
-        return true
-    end
-
-    local mask = GMCC_CLASS_MASKS and GMCC_CLASS_MASKS[className]
-    if not mask then
-        return false
-    end
-
-    if item.mask == -1 then
-        return true
-    end
-
-    return BitAnd(item.mask, mask) ~= 0
-end
-
-local function GetItemLevelFilter()
-    if GMCC_UsePlayerLevelCheck and GMCC_UsePlayerLevelCheck:GetChecked() then
-        return UnitLevel("player") or 0
-    end
-
-    local value = tonumber(Trim(GMCC_ClassLevelBox and GMCC_ClassLevelBox:GetText() or ""))
-    if not value or value < 1 then
-        return nil
-    end
-
-    return math.floor(value)
-end
-
-local function ItemAllowedForLevel(item, level)
-    if not level then
-        return true
-    end
-
-    return (tonumber(item.rl) or 0) <= level
-end
-
-local function ItemAllowedForFaction(item)
-    if item.race == -1 then
-        return true
-    end
-
-    local faction = UnitFactionGroup("player")
-    local mask = GMCC_FACTION_RACE_MASKS and GMCC_FACTION_RACE_MASKS[faction]
-    if not mask then
-        return true
-    end
-
-    return BitAnd(item.race, mask) ~= 0
-end
-
-local function ItemDetails(item)
-    local details = { item.type }
-    if item.inv and item.inv ~= "" and item.inv ~= "Non-equip" then
-        table.insert(details, item.inv)
-    end
-    if item.q and item.q ~= "" then
-        table.insert(details, item.q)
-    end
-    table.insert(details, "ilvl " .. item.il)
-    table.insert(details, "req " .. item.rl)
-    if item.skill and item.skill ~= "" then
-        table.insert(details, item.skill)
-    end
-    return table.concat(details, " | ")
-end
-
-local function RefreshClassResults()
-    if not GMCC_ClassStatus then
-        return
-    end
-
-    local count = table.getn(state.classResults)
-    if count == 0 then
-        GMCC_ClassStatus:SetText(state.classStatusText or "No class results yet.")
-    else
-        GMCC_ClassStatus:SetText(count .. " results")
-    end
-
-    for i = 1, 5 do
-        local result = state.classResults[i]
-        local line = state.classResultLines[i]
-        local button = state.classResultButtons[i]
-        if line then
-            line:SetText(result and result.text or "")
-        end
-        if button then
-            if result then
-                button.command = result.command
-                button:SetText(result.action)
-                button:Show()
-            else
-                button.command = nil
-                button:Hide()
-            end
-        end
-    end
-end
-
-local function SearchClassSpells()
-    state.classResults = {}
-    state.classStatusText = nil
-    local className = NormalizeClassName(GMCC_ClassBox and GMCC_ClassBox:GetText() or "")
-    if not className then
-        state.classStatusText = "Unknown class."
-        RefreshClassResults()
-        return
-    end
-
-    local query = GMCC_ClassSearchBox and GMCC_ClassSearchBox:GetText() or ""
-    query = Trim(query)
-    if query == "" then
-        query = "*"
-    end
-
-    for _, spell in ipairs(GMCC_CLASS_SPELLS or {}) do
-        if className == "All" or spell.class == className or spell.class == "General" then
-            local spellName = GetSpellInfo(spell.id) or ("Spell " .. spell.id)
-            if WildcardMatch(spellName, query) or WildcardMatch(tostring(spell.id), query) then
-                table.insert(state.classResults, {
-                    text = spell.id .. " - " .. spellName .. " | " .. spell.class .. " | req " .. spell.req,
-                    action = "Learn",
-                    command = ".learn " .. spell.id,
-                })
-                if table.getn(state.classResults) >= 5 then
-                    break
-                end
-            end
-        end
-    end
-    RefreshClassResults()
-end
-
-local function SearchClassItems(mountsOnly)
-    state.classResults = {}
-    state.classStatusText = nil
-    local className = NormalizeClassName(GMCC_ClassBox and GMCC_ClassBox:GetText() or "")
-    if not className then
-        state.classStatusText = "Unknown class."
-        RefreshClassResults()
-        return
-    end
-
-    local level = GetItemLevelFilter()
-
-    local query = GMCC_ClassSearchBox and GMCC_ClassSearchBox:GetText() or ""
-    query = Trim(query)
-    if query == "" then
-        query = "*"
-    end
-
-    for _, item in ipairs(GMCC_CLASS_ITEMS or {}) do
-        if (not mountsOnly or item.mount) and ItemAllowedForClass(item, className) and ItemAllowedForLevel(item, level) and ItemAllowedForFaction(item) then
-            local haystack = item.name .. " " .. item.type .. " " .. (item.inv or "") .. " " .. (item.q or "") .. " " .. (item.skill or "") .. " " .. item.id
-            if WildcardMatch(haystack, query) then
-                table.insert(state.classResults, {
-                    text = item.id .. " - " .. item.name .. " | " .. ItemDetails(item),
-                    action = "Add",
-                    command = ".additem " .. item.id .. " 1",
-                })
-                if table.getn(state.classResults) >= 5 then
-                    break
-                end
-            end
-        end
-    end
-    RefreshClassResults()
 end
 
 local function RunCommand(command)
@@ -446,6 +216,12 @@ local function BuildCommandsPanel(parent)
     GMCC_CountText = CreateLabel(panel, "GMCC_CountText", "", "small")
     GMCC_CountText:SetPoint("LEFT", GMCC_FilterBox, "RIGHT", 14, 0)
 
+    local mountsButton = CreateButton(panel, nil, "Mounts", 82, 24)
+    mountsButton:SetPoint("TOPRIGHT", -4, -2)
+    mountsButton:SetScript("OnClick", function()
+        RunCommand(".lookup item mount")
+    end)
+
     local lastButton
     for i, cat in ipairs(categories) do
         local button = CreateButton(panel, "GMCC_Cat" .. i, cat, 70, 22)
@@ -553,87 +329,12 @@ local function BuildCommandsPanel(parent)
             SetEditBoxText(GMCC_CommandBox, GMCommandCenterDB.lastCommand)
         end
     end)
-
-    local classLabel = CreateLabel(panel, nil, "Class Search", "large")
-    classLabel:SetPoint("TOPLEFT", run, "BOTTOMLEFT", 0, -22)
-
-    local classNameLabel = CreateLabel(panel, nil, "Class", "small")
-    classNameLabel:SetPoint("TOPLEFT", classLabel, "BOTTOMLEFT", 0, -6)
-    GMCC_ClassBox = CreateEditBox(panel, "GMCC_ClassBox", 110, 24)
-    GMCC_ClassBox:SetPoint("TOPLEFT", classNameLabel, "BOTTOMLEFT", 0, -4)
-    GMCC_ClassBox:SetText(PlayerClassName())
-
-    local searchLabel = CreateLabel(panel, nil, "Name or ID", "small")
-    searchLabel:SetPoint("LEFT", classNameLabel, "RIGHT", 84, 0)
-    GMCC_ClassSearchBox = CreateEditBox(panel, "GMCC_ClassSearchBox", 170, 24)
-    GMCC_ClassSearchBox:SetPoint("TOPLEFT", searchLabel, "BOTTOMLEFT", 0, -4)
-    GMCC_ClassSearchBox:SetText("*")
-
-    local levelLabel = CreateLabel(panel, nil, "Level", "small")
-    levelLabel:SetPoint("LEFT", searchLabel, "RIGHT", 156, 0)
-    GMCC_ClassLevelBox = CreateEditBox(panel, "GMCC_ClassLevelBox", 46, 24)
-    GMCC_ClassLevelBox:SetPoint("TOPLEFT", levelLabel, "BOTTOMLEFT", 0, -4)
-    GMCC_ClassLevelBox:SetText(tostring(UnitLevel("player") or 80))
-
-    GMCC_UsePlayerLevelCheck = CreateFrame("CheckButton", "GMCC_UsePlayerLevelCheck", panel, "UICheckButtonTemplate")
-    GMCC_UsePlayerLevelCheck:SetWidth(24)
-    GMCC_UsePlayerLevelCheck:SetHeight(24)
-    GMCC_UsePlayerLevelCheck:SetPoint("LEFT", GMCC_ClassLevelBox, "RIGHT", 6, 0)
-    GMCC_UsePlayerLevelCheck:SetChecked(true)
-    GMCC_UsePlayerLevelCheck:SetScript("OnClick", function(self)
-        if self:GetChecked() and GMCC_ClassLevelBox then
-            GMCC_ClassLevelBox:SetText(tostring(UnitLevel("player") or 80))
-        end
-    end)
-    local useLevelText = CreateLabel(panel, nil, "Use my level", "small")
-    useLevelText:SetPoint("LEFT", GMCC_UsePlayerLevelCheck, "RIGHT", 0, 0)
-
-    local spellSearch = CreateButton(panel, nil, "Spells", 72, 24)
-    spellSearch:SetPoint("TOPLEFT", GMCC_ClassBox, "BOTTOMLEFT", 0, -8)
-    spellSearch:SetScript("OnClick", SearchClassSpells)
-
-    local itemSearch = CreateButton(panel, nil, "Items", 72, 24)
-    itemSearch:SetPoint("LEFT", spellSearch, "RIGHT", 8, 0)
-    itemSearch:SetScript("OnClick", function()
-        SearchClassItems(false)
-    end)
-
-    local mountSearch = CreateButton(panel, nil, "Mounts", 72, 24)
-    mountSearch:SetPoint("LEFT", itemSearch, "RIGHT", 8, 0)
-    mountSearch:SetScript("OnClick", function()
-        SearchClassItems(true)
-    end)
-
-    GMCC_ClassStatus = CreateLabel(panel, "GMCC_ClassStatus", "No class results yet.", "small")
-    GMCC_ClassStatus:SetPoint("LEFT", mountSearch, "RIGHT", 12, 0)
-    GMCC_ClassStatus:SetTextColor(0.72, 0.72, 0.72)
-
-    for i = 1, 5 do
-        local line = CreateLabel(panel, nil, "", "small")
-        if i == 1 then
-            line:SetPoint("TOPLEFT", spellSearch, "BOTTOMLEFT", 0, -10)
-        else
-            line:SetPoint("TOPLEFT", state.classResultLines[i - 1], "BOTTOMLEFT", 0, -3)
-        end
-        line:SetWidth(500)
-        state.classResultLines[i] = line
-
-        local action = CreateButton(panel, nil, "Run", 62, 20)
-        action:SetPoint("LEFT", line, "RIGHT", 8, 0)
-        action:SetScript("OnClick", function(self)
-            if self.command then
-                RunCommand(self.command)
-            end
-        end)
-        action:Hide()
-        state.classResultButtons[i] = action
-    end
 end
 
 local function BuildFrame()
     local frame = CreateFrame("Frame", "GMCommandCenterFrame", UIParent)
     frame:SetWidth(680)
-    frame:SetHeight(660)
+    frame:SetHeight(540)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
     frame:EnableMouse(true)

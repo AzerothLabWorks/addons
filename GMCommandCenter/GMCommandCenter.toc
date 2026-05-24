@@ -6,5 +6,4 @@
 ## SavedVariables: GMCommandCenterDB
 
 GMCommandCenter_Data.lua
-GMCommandCenter_ClassData.lua
 GMCommandCenter.lua
