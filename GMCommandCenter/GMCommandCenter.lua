@@ -1,11 +1,16 @@
 local ADDON = "GMCommandCenter"
 local ROWS = 13
+local MOUNT_ROWS = 8
 local state = {
     selected = nil,
     filter = "",
     category = "All",
     tab = "commands",
     rows = {},
+    mountMode = false,
+    mountPage = 1,
+    mountRows = {},
+    commandDetailControls = {},
 }
 
 local categories = { "All", "GM", "Items", "Spells", "Character", "Teleport", "NPCs", "Quests", "Server" }
@@ -124,7 +129,131 @@ local function SetEditBoxText(box, text)
     box:SetCursorPosition(0)
 end
 
+local function HideMountRows()
+    state.mountMode = false
+    if GMCC_MountStatus then
+        GMCC_MountStatus:Hide()
+    end
+    if GMCC_MountPrev then
+        GMCC_MountPrev:Hide()
+    end
+    if GMCC_MountNext then
+        GMCC_MountNext:Hide()
+    end
+    for _, row in ipairs(state.mountRows) do
+        row:Hide()
+    end
+end
+
+local function SetCommandControlsShown(isShown)
+    for _, control in ipairs(state.commandDetailControls) do
+        if isShown then
+            control:Show()
+        else
+            control:Hide()
+        end
+    end
+end
+
+local function MatchesMount(mount)
+    local needle = state.filter or ""
+    if needle == "" then
+        return true
+    end
+
+    local haystack = mount.id .. " " .. mount.name .. " " .. mount.speed .. " " .. mount.movement .. " " .. (mount.class or "")
+    return WildcardMatch(haystack, needle)
+end
+
+local function FilterMounts()
+    local results = {}
+    if not GMCC_MOUNT_SPELLS then
+        return results
+    end
+
+    for _, mount in ipairs(GMCC_MOUNT_SPELLS) do
+        if MatchesMount(mount) then
+            table.insert(results, mount)
+        end
+    end
+    return results
+end
+
+local function RefreshMountRows()
+    if not state.mountMode then
+        return
+    end
+
+    local mounts = FilterMounts()
+    local total = table.getn(mounts)
+    local maxPage = math.max(1, math.ceil(total / MOUNT_ROWS))
+    if state.mountPage > maxPage then
+        state.mountPage = maxPage
+    elseif state.mountPage < 1 then
+        state.mountPage = 1
+    end
+
+    local startIndex = ((state.mountPage - 1) * MOUNT_ROWS) + 1
+    local endIndex = math.min(startIndex + MOUNT_ROWS - 1, total)
+    if GMCC_MountStatus then
+        if total > 0 then
+            GMCC_MountStatus:SetText("Showing " .. startIndex .. "-" .. endIndex .. " of " .. total .. " mount spells.")
+        else
+            GMCC_MountStatus:SetText("No mount spells match this filter.")
+        end
+        GMCC_MountStatus:Show()
+    end
+    if GMCC_MountPrev then
+        if state.mountPage > 1 then
+            GMCC_MountPrev:Show()
+        else
+            GMCC_MountPrev:Hide()
+        end
+    end
+    if GMCC_MountNext then
+        if state.mountPage < maxPage then
+            GMCC_MountNext:Show()
+        else
+            GMCC_MountNext:Hide()
+        end
+    end
+
+    for i = 1, MOUNT_ROWS do
+        local row = state.mountRows[i]
+        local mount = mounts[startIndex + i - 1]
+        if row and mount then
+            local classText = ""
+            if mount.class and mount.class ~= "" then
+                classText = " | " .. mount.class
+            end
+            row.mount = mount
+            row.label:SetText(mount.id .. " - " .. mount.name .. " | " .. mount.speed .. " | " .. mount.movement .. " | lvl " .. mount.level .. classText)
+            row:Show()
+        elseif row then
+            row.mount = nil
+            row:Hide()
+        end
+    end
+end
+
+local function ShowMountBrowser()
+    state.mountMode = true
+    state.mountPage = 1
+    state.selected = nil
+    SetCommandControlsShown(false)
+
+    GMCC_TitleText:SetText("Mount Spells")
+    GMCC_MetaText:SetText("WotLKDB Mounts skill 777")
+    GMCC_SyntaxText:SetText(".learn <spellId>")
+    GMCC_HelpText:SetText("Mount results are offline spell data from the Mounts category. Use the top search box for names, speed values like 310, or movement types like Ground and Flying.")
+    SetEditBoxText(GMCC_CommandBox, "")
+    SetEditBoxText(GMCC_ArgsBox, "")
+    RefreshMountRows()
+end
+
 local function SelectCommand(entry)
+    HideMountRows()
+    SetCommandControlsShown(true)
     state.selected = entry
     GMCC_TitleText:SetText(entry.name)
     GMCC_MetaText:SetText(entry.cat .. "   Security " .. entry.sec)
@@ -211,6 +340,8 @@ local function BuildCommandsPanel(parent)
         state.filter = self:GetText() or ""
         ResetCommandScroll()
         RefreshCommandRows()
+        state.mountPage = 1
+        RefreshMountRows()
     end)
 
     GMCC_CountText = CreateLabel(panel, "GMCC_CountText", "", "small")
@@ -227,6 +358,8 @@ local function BuildCommandsPanel(parent)
             button:SetPoint("LEFT", lastButton, "RIGHT", 4, 0)
         end
         button:SetScript("OnClick", function()
+            HideMountRows()
+            SetCommandControlsShown(true)
             state.category = cat
             ResetCommandScroll()
             RefreshCommandRows()
@@ -237,7 +370,7 @@ local function BuildCommandsPanel(parent)
             local mountButton = CreateButton(panel, nil, "Mount", 70, 22)
             mountButton:SetPoint("LEFT", lastButton, "RIGHT", 4, 0)
             mountButton:SetScript("OnClick", function()
-                RunCommand(".lookup spell mount")
+                ShowMountBrowser()
             end)
             lastButton = mountButton
         end
@@ -332,6 +465,62 @@ local function BuildCommandsPanel(parent)
             SetEditBoxText(GMCC_CommandBox, GMCommandCenterDB.lastCommand)
         end
     end)
+
+    table.insert(state.commandDetailControls, argsLabel)
+    table.insert(state.commandDetailControls, GMCC_ArgsBox)
+    table.insert(state.commandDetailControls, commandLabel)
+    table.insert(state.commandDetailControls, GMCC_CommandBox)
+    table.insert(state.commandDetailControls, run)
+    table.insert(state.commandDetailControls, help)
+    table.insert(state.commandDetailControls, last)
+
+    GMCC_MountStatus = CreateLabel(panel, "GMCC_MountStatus", "", "small")
+    GMCC_MountStatus:SetPoint("TOPLEFT", 282, -222)
+    GMCC_MountStatus:SetWidth(225)
+    GMCC_MountStatus:Hide()
+
+    GMCC_MountPrev = CreateButton(panel, "GMCC_MountPrev", "Prev", 54, 22)
+    GMCC_MountPrev:SetPoint("LEFT", GMCC_MountStatus, "RIGHT", 8, 0)
+    GMCC_MountPrev:SetScript("OnClick", function()
+        state.mountPage = state.mountPage - 1
+        RefreshMountRows()
+    end)
+    GMCC_MountPrev:Hide()
+
+    GMCC_MountNext = CreateButton(panel, "GMCC_MountNext", "Next", 54, 22)
+    GMCC_MountNext:SetPoint("LEFT", GMCC_MountPrev, "RIGHT", 4, 0)
+    GMCC_MountNext:SetScript("OnClick", function()
+        state.mountPage = state.mountPage + 1
+        RefreshMountRows()
+    end)
+    GMCC_MountNext:Hide()
+
+    for i = 1, MOUNT_ROWS do
+        local row = CreateFrame("Frame", "GMCC_MountRow" .. i, panel)
+        row:SetWidth(360)
+        row:SetHeight(24)
+        if i == 1 then
+            row:SetPoint("TOPLEFT", GMCC_MountStatus, "BOTTOMLEFT", 0, -8)
+        else
+            row:SetPoint("TOPLEFT", state.mountRows[i - 1], "BOTTOMLEFT", 0, -2)
+        end
+
+        row.label = CreateLabel(row, nil, "", "small")
+        row.label:SetPoint("LEFT", 0, 0)
+        row.label:SetWidth(285)
+
+        row.learn = CreateButton(row, nil, "Learn", 62, 22)
+        row.learn:SetPoint("RIGHT", 0, 0)
+        row.learn:SetScript("OnClick", function(self)
+            local parent = self:GetParent()
+            if parent.mount then
+                RunCommand(".learn " .. parent.mount.id)
+            end
+        end)
+
+        row:Hide()
+        state.mountRows[i] = row
+    end
 end
 
 local function BuildFrame()
