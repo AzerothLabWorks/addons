@@ -21,6 +21,8 @@ Open it in game with:
 /agm
 ```
 
+The addon also creates a movable **GMCC** launcher button. Left-click it to open or close the panel, drag it to reposition it, or right-click it to reset the launcher position.
+
 The addon sends AzerothCore GM commands through chat, so your account still needs the correct GM security level. Commands that act on a player, NPC, or object still follow normal AzerothCore targeting rules.
 
 ## Current Features
@@ -29,6 +31,7 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Wildcard-aware command search. Examples: `lookup*`, `*spell`, `tele*name`.
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
+- Movable **GMCC** launcher button with saved position.
 - **Mount** button next to **Spells** that opens an embedded offline Mounts spell browser with speed/type details and Learn buttons.
 - Quick action buttons for common GM commands.
 

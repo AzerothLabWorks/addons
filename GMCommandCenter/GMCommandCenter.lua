@@ -362,6 +362,34 @@ local function RunCommand(command)
     GMCommandCenterDB.lastCommand = command
 end
 
+local function SaveLauncherPosition(button)
+    GMCommandCenterDB = GMCommandCenterDB or {}
+    GMCommandCenterDB.launcher = GMCommandCenterDB.launcher or {}
+
+    local x, y = button:GetCenter()
+    local centerX, centerY = UIParent:GetCenter()
+
+    GMCommandCenterDB.launcher.x = (x or centerX) - centerX
+    GMCommandCenterDB.launcher.y = (y or centerY) - centerY
+end
+
+local function PositionLauncherButton(button)
+    local launcher = GMCommandCenterDB and GMCommandCenterDB.launcher
+    button:ClearAllPoints()
+    if launcher and launcher.x and launcher.y then
+        button:SetPoint("CENTER", UIParent, "CENTER", launcher.x, launcher.y)
+    else
+        button:SetPoint("CENTER", UIParent, "CENTER", 390, -175)
+    end
+end
+
+local function ResetLauncherButton(button)
+    GMCommandCenterDB = GMCommandCenterDB or {}
+    GMCommandCenterDB.launcher = nil
+    button:ClearAllPoints()
+    button:SetPoint("CENTER", UIParent, "CENTER", 390, -175)
+end
+
 local function ToggleMainFrame(text)
     text = Trim(text)
     if text ~= "" then
@@ -862,6 +890,52 @@ local function BuildFrame()
     return frame
 end
 
+local function BuildLauncherButton()
+    local button = CreateButton(UIParent, "GMCC_LauncherButton", "GMCC", 48, 24)
+    button:SetFrameStrata("MEDIUM")
+    button:SetMovable(true)
+    button:EnableMouse(true)
+    button:SetClampedToScreen(true)
+    button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    button:RegisterForDrag("LeftButton")
+    PositionLauncherButton(button)
+
+    button:SetScript("OnDragStart", function(self)
+        state.launcherMoved = true
+        self:StartMoving()
+    end)
+    button:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        SaveLauncherPosition(self)
+    end)
+    button:SetScript("OnClick", function(self, mouseButton)
+        if state.launcherMoved then
+            state.launcherMoved = false
+            return
+        end
+
+        if mouseButton == "RightButton" then
+            ResetLauncherButton(self)
+            Print("launcher position reset.")
+            return
+        end
+
+        ToggleMainFrame("")
+    end)
+    button:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("GM Command Center")
+        GameTooltip:AddLine("Left-click to open or close.", 1, 1, 1)
+        GameTooltip:AddLine("Drag to move. Right-click to reset.", 0.8, 0.8, 0.8)
+        GameTooltip:Show()
+    end)
+    button:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+
+    return button
+end
+
 SLASH_GMCOMMANDCENTER1 = "/gmcc"
 SLASH_GMCOMMANDCENTER2 = "/agm"
 SlashCmdList["GMCOMMANDCENTER"] = ToggleMainFrame
@@ -875,6 +949,7 @@ loader:SetScript("OnEvent", function(self, event, arg1)
 
     GMCommandCenterDB = GMCommandCenterDB or {}
     BuildFrame()
+    BuildLauncherButton()
     Print("loaded. Type /gmcc or /agm.")
 end)
 
