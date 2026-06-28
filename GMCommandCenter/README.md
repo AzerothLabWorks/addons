@@ -29,7 +29,7 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Wildcard-aware command search. Examples: `lookup*`, `*spell`, `tele*name`.
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
-- **Mount** button next to **Spells** that opens an offline Mounts spell browser with speed/type details and Learn buttons.
+- **Mount** button next to **Spells** that opens an embedded offline Mounts spell browser with speed/type details and Learn buttons.
 - Quick action buttons for common GM commands.
 
 ## Name Search and Wildcards
@@ -49,7 +49,7 @@ For money commands, use the command browser's **Character** category and select 
 
 ## Mount Browser
 
-Use the **Mount** button next to **Spells** to browse offline mount spell data from the WotLKDB Mounts spell category.
+Use the **Mount** button next to **Spells** to browse embedded offline mount spell data from the WotLKDB Mounts spell category.
 
 ```text
 .learn <spellId>
