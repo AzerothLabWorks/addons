@@ -186,6 +186,7 @@ local function RefreshMountRows()
 
     local mounts = FilterMounts()
     local total = table.getn(mounts)
+    local hasMountData = GMCC_MOUNT_SPELLS ~= nil
     local maxPage = math.max(1, math.ceil(total / MOUNT_ROWS))
     if state.mountPage > maxPage then
         state.mountPage = maxPage
@@ -198,6 +199,8 @@ local function RefreshMountRows()
     if GMCC_MountStatus then
         if total > 0 then
             GMCC_MountStatus:SetText("Showing " .. startIndex .. "-" .. endIndex .. " of " .. total .. " mount spells.")
+        elseif not hasMountData then
+            GMCC_MountStatus:SetText("Mount data file is not loaded. Copy GMCommandCenter_Mounts.lua with the addon.")
         else
             GMCC_MountStatus:SetText("No mount spells match this filter.")
         end
@@ -240,7 +243,11 @@ local function ShowMountBrowser()
     state.mountMode = true
     state.mountPage = 1
     state.selected = nil
+    state.filter = ""
     SetCommandControlsShown(false)
+    if GMCC_FilterBox and GMCC_FilterBox:GetText() ~= "" then
+        GMCC_FilterBox:SetText("")
+    end
 
     GMCC_TitleText:SetText("Mount Spells")
     GMCC_MetaText:SetText("WotLKDB Mounts skill 777")
