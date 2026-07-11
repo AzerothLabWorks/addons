@@ -6,7 +6,7 @@ This addon is designed for:
 
 ```text
 AzerothLabWorks/azerothcore-hybrid-lab
-branch: codex/hybrid-talents-ui
+branch: codex/hybrid-race-class-qa
 ```
 
 ## Install
@@ -20,7 +20,7 @@ World of Warcraft 3.3.5a\Interface\AddOns\HybridTalentUI
 Example Windows path:
 
 ```text
-C:\Games\WoW-3.3.5a-HD-Dev\Interface\AddOns\HybridTalentUI
+C:\Games\WoW-3.3.5a-HD-Test\Interface\AddOns\HybridTalentUI
 ```
 
 Then restart WoW, or reload the UI, and enable `Hybrid Talent UI` from the AddOns button on the character select screen.
@@ -32,7 +32,7 @@ The addon requires the Hybrid Talent System server module from the Hybrid Lab de
 Recommended dev setup repo:
 
 ```text
-https://github.com/AzerothLabWorks/azerothcore-hybrid-lab/tree/codex/hybrid-talents-ui
+https://github.com/AzerothLabWorks/azerothcore-hybrid-lab/tree/codex/hybrid-race-class-qa
 ```
 
 ## Use
@@ -55,6 +55,29 @@ The addon also creates a movable Hybrid launcher button near the microbar. Left-
 - Right-click to unlearn supported hybrid spells and talents.
 - Known filter support for learned hybrid spells/talents.
 - Action-bar preservation for learned hybrid spells and talent-granted spells.
+- Shaman weapon imbue reminders for main-hand and off-hand temporary weapon enchants.
+
+## Weapon Imbue Reminder
+
+The QA addon can remember the last supported shaman weapon imbue the player cast and show separate movable `MH` and `OH` reminder buttons when the main-hand or off-hand temporary enchant is missing or close to expiring. The buttons use client-side `GetWeaponEnchantInfo()` state and do not change server spell validation.
+
+Tested shaman imbues:
+
+- Rockbiter Weapon
+- Flametongue Weapon
+- Frostbrand Weapon
+- Windfury Weapon
+- Earthliving Weapon
+
+Useful commands:
+
+- `/hyui imbue` shows reminder status.
+- `/hyui imbue on` enables reminders.
+- `/hyui imbue off` disables reminders.
+- `/hyui imbue reset` clears remembered imbues and saved reminder positions.
+- `/hyui imbue threshold <seconds>` changes the low-duration reminder threshold.
+
+Follow-up QA targets include Rogue poisons and other temporary weapon effects once those characters are being tested.
 
 ## Notes
 
