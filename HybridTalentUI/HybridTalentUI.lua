@@ -329,6 +329,25 @@ local function ResolveSpellDescription(serverDescription, clientDescription)
     return serverDescription or ""
 end
 
+local function CompactListDescription(description)
+    description = description or ""
+    description = string.gsub(description, "%s+", " ")
+    description = string.gsub(description, "^%s+", "")
+    description = string.gsub(description, "%s+$", "")
+
+    local firstSentence = string.match(description, "^(.-%.)%s")
+    if firstSentence and string.len(firstSentence) >= 24 then
+        description = firstSentence
+    end
+
+    local maxLength = 82
+    if string.len(description) > maxLength then
+        description = string.sub(description, 1, maxLength - 3) .. "..."
+    end
+
+    return description
+end
+
 local function ShowSpellTooltip(owner, row)
     if not owner or not row then
         return
@@ -759,7 +778,7 @@ local function UpdateRows()
                 end
             else
                 button.meta:SetText("Level " .. data.requiredLevel .. "  Cost " .. data.cost)
-                button.desc:SetText(data.description ~= "" and data.description or "No description available.")
+                button.desc:SetText(data.listDescription ~= "" and data.listDescription or "No description available.")
                 button.reason:SetText(data.reason or "")
 
                 if data.known then
@@ -820,6 +839,7 @@ local function AddSpell(parts)
         description = ResolveSpellDescription(serverDescription, clientDescription),
         reason = parts[11] or "",
     }
+    row.listDescription = CompactListDescription(row.description)
     row.searchText = BuildSearchText(row.name, row.description, clientDescription)
 
     if row.spellId > 0 and CLASS_NAMES[classIndex] then

@@ -81,7 +81,7 @@ Rogue poison reminders are not implemented yet. Follow-up QA targets include Rog
 
 ## Spell Descriptions
 
-The addon prefers curated server descriptions when available. If the server sends an imported trainer fallback such as `Paladin - Trainer` or `Priest - Trainer`, the addon displays the native client spell tooltip description instead so broad trainer imports still read cleanly in the Hybrid Training list.
+The addon prefers curated server descriptions when available. If the server sends an imported trainer fallback such as `Paladin - Trainer` or `Priest - Trainer`, the addon uses the native client spell tooltip description. Full descriptions remain searchable and visible in the detail panel, while list rows use a compact one-line summary to keep the browser readable.
 
 ## Notes
 
