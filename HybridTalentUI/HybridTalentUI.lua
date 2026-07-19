@@ -309,6 +309,26 @@ local function BuildSearchText(...)
     return string.lower(table.concat(values, " "))
 end
 
+local function IsServerFallbackDescription(description)
+    if not description or description == "" then
+        return true
+    end
+
+    if string.find(description, " - Trainer", 1, true) then
+        return true
+    end
+
+    return description == "Hybrid spell"
+end
+
+local function ResolveSpellDescription(serverDescription, clientDescription)
+    if IsServerFallbackDescription(serverDescription) and clientDescription and clientDescription ~= "" then
+        return clientDescription
+    end
+
+    return serverDescription or ""
+end
+
 local function ShowSpellTooltip(owner, row)
     if not owner or not row then
         return
@@ -785,19 +805,21 @@ local function UpdateRows()
 end
 
 local function AddSpell(parts)
+    local spellId = tonumber(parts[3] or "0") or 0
+    local serverDescription = parts[10] or ""
+    local clientDescription = GetClientSpellDescription(spellId)
     local classIndex = (tonumber(parts[4] or "0") or 0) + 1
     local row = {
-        spellId = tonumber(parts[3] or "0") or 0,
+        spellId = spellId,
         classIndex = classIndex,
         requiredLevel = tonumber(parts[5] or "1") or 1,
         cost = tonumber(parts[6] or "1") or 1,
         known = parts[7] == "1",
         canLearn = parts[8] == "1",
         name = parts[9] or "",
-        description = parts[10] or "",
+        description = ResolveSpellDescription(serverDescription, clientDescription),
         reason = parts[11] or "",
     }
-    local clientDescription = GetClientSpellDescription(row.spellId)
     row.searchText = BuildSearchText(row.name, row.description, clientDescription)
 
     if row.spellId > 0 and CLASS_NAMES[classIndex] then
