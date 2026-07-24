@@ -1215,6 +1215,7 @@ local function EnsureSavedVariables()
     HybridTalentUIDB = HybridTalentUIDB or {}
     HybridTalentUIDB.openButton = HybridTalentUIDB.openButton or {}
     HybridTalentUIDB.imbueReminder = HybridTalentUIDB.imbueReminder or {}
+    HybridTalentUIDB.imbueReminder.characters = HybridTalentUIDB.imbueReminder.characters or {}
     if HybridTalentUIDB.imbueReminder.enabled == nil then
         HybridTalentUIDB.imbueReminder.enabled = true
     end
@@ -1224,6 +1225,19 @@ end
 local function GetImbueReminderDB()
     EnsureSavedVariables()
     return HybridTalentUIDB.imbueReminder
+end
+
+local function GetImbueReminderCharacterKey()
+    local name = UnitName and UnitName("player") or "Unknown"
+    local realm = GetRealmName and GetRealmName() or "Unknown"
+    return tostring(realm or "Unknown") .. "::" .. tostring(name or "Unknown")
+end
+
+local function GetImbueReminderCharacterDB()
+    local db = GetImbueReminderDB()
+    local key = GetImbueReminderCharacterKey()
+    db.characters[key] = db.characters[key] or {}
+    return db.characters[key]
 end
 
 local function IsTrackedImbueSpell(spellId, spellName)
@@ -1283,7 +1297,7 @@ local function GetImbueReminderPositionDB(handKey)
 end
 
 local function GetImbueReminderSpellId(handKey)
-    local db = GetImbueReminderDB()
+    local db = GetImbueReminderCharacterDB()
     if handKey == "off" then
         return db.offSpellId
     end
@@ -1292,7 +1306,7 @@ local function GetImbueReminderSpellId(handKey)
 end
 
 local function SetImbueReminderSpellId(handKey, spellId)
-    local db = GetImbueReminderDB()
+    local db = GetImbueReminderCharacterDB()
     if handKey == "off" then
         db.offSpellId = spellId
     else
@@ -1479,11 +1493,11 @@ local function DebugImbueReminder()
     local a, b, c, d, e, f, g, h = GetWeaponEnchantInfo()
     local mainHas, mainExpiration = GetImbueReminderHandState("main")
     local offHas, offExpiration = GetImbueReminderHandState("off")
-    local db = GetImbueReminderDB()
+    local characterDB = GetImbueReminderCharacterDB()
 
     Print("raw weapon enchants: 1=" .. tostring(a) .. ", 2=" .. tostring(b) .. ", 3=" .. tostring(c) .. ", 4=" .. tostring(d) .. ", 5=" .. tostring(e) .. ", 6=" .. tostring(f) .. ", 7=" .. tostring(g) .. ", 8=" .. tostring(h))
     Print("parsed imbues: MH=" .. tostring(mainHas) .. " exp=" .. tostring(mainExpiration) .. "; OH=" .. tostring(offHas) .. " exp=" .. tostring(offExpiration))
-    Print("remembered spells: MH=" .. tostring(db.mainSpellId) .. "; OH=" .. tostring(db.offSpellId) .. "; offhand item=" .. tostring(GetInventoryItemLink and GetInventoryItemLink("player", 17) or nil))
+    Print("remembered spells: character=" .. tostring(GetImbueReminderCharacterKey()) .. "; MH=" .. tostring(characterDB.mainSpellId) .. "; OH=" .. tostring(characterDB.offSpellId) .. "; offhand item=" .. tostring(GetInventoryItemLink and GetInventoryItemLink("player", 17) or nil))
 end
 
 local function ResolveImbueSpellId(spellName, spellId)
