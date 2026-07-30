@@ -69,7 +69,7 @@ Use the **Mount** button next to **Spells** to browse embedded offline mount spe
 .learn <spellId>
 ```
 
-The top search box filters mount names, spell IDs, speed values, movement types such as `Ground`, `Flying`, or `Aquatic`, and class requirements when present. Use **Prev** and **Next** to browse broader result sets, then click **Learn** on a result to run `.learn <spellId>`.
+The top search box filters mount names, spell IDs, speed values, movement types such as `Ground`, `Flying`, or `Aquatic`, and class requirements when present. Use **Prev** and **Next** to browse broader result sets, hover a result icon to inspect the spell tooltip, then click **Learn** on a result to run `.learn <spellId>`.
 
 ## Important Limitation
 
