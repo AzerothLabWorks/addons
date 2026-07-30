@@ -310,47 +310,47 @@ GMCC_MOUNT_SPELLS = GMCC_MOUNT_SPELLS or {
 }
 -- Heirloom item data derived from the WotLKDB item filter qu=7;minle=1;maxle=1.
 GMCC_HEIRLOOM_ITEMS = GMCC_HEIRLOOM_ITEMS or {
-    { id = 38691, name = "Ancestral Claymore", type = "Weapon", subtype = "Two-Handed Sword", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42943, name = "Bloodied Arcanite Reaper", type = "Weapon", subtype = "Axe", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42944, name = "Balanced Heartseeker", type = "Weapon", subtype = "Dagger", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42945, name = "Venerable Dal'Rend's Sacred Charge", type = "Weapon", subtype = "Sword", slot = "Main Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42946, name = "Charmed Ancient Bone Bow", type = "Weapon", subtype = "Bow", slot = "Ranged", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42947, name = "Dignified Headmaster's Charge", type = "Weapon", subtype = "Staff", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42948, name = "Devout Aurastone Hammer", type = "Weapon", subtype = "Mace", slot = "Main Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42949, name = "Polished Spaulders of Valor", type = "Armor", subtype = "Plate", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42950, name = "Champion Herod's Shoulder", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42951, name = "Mystical Pauldrons of Elements", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42952, name = "Stained Shadowcraft Spaulders", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42984, name = "Preened Ironfeather Shoulders", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42985, name = "Tattered Dreadmist Mantle", type = "Armor", subtype = "Cloth", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42991, name = "Swift Hand of Justice", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 42992, name = "Discerning Eye of the Beast", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44090, name = "Test Mail Shoulder 2", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44091, name = "Sharpened Scarlet Kris", type = "Weapon", subtype = "Dagger", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44092, name = "Reforged Truesilver Champion", type = "Weapon", subtype = "Two-Handed Sword", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44093, name = "Upgraded Dwarven Hand Cannon", type = "Weapon", subtype = "Gun", slot = "Ranged", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44094, name = "The Blessed Hammer of Grace", type = "Weapon", subtype = "Mace", slot = "Main Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44095, name = "Grand Staff of Jordan", type = "Weapon", subtype = "Staff", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44096, name = "Battleworn Thrash Blade", type = "Weapon", subtype = "Sword", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44097, name = "Inherited Insignia of the Horde", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Horde", level = 1, reqLevel = 1 },
-    { id = 44098, name = "Inherited Insignia of the Alliance", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Alliance", level = 1, reqLevel = 1 },
-    { id = 44099, name = "Strengthened Stockade Pauldrons", type = "Armor", subtype = "Plate", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44100, name = "Pristine Lightforge Spaulders", type = "Armor", subtype = "Plate", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44101, name = "Prized Beastmaster's Mantle", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44102, name = "Aged Pauldrons of The Five Thunders", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44103, name = "Exceptional Stormshroud Shoulders", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44105, name = "Lasting Feralheart Spaulders", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44107, name = "Exquisite Sunderseer Mantle", type = "Armor", subtype = "Cloth", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 44115, name = "Wintergrasp Commendation", type = "Misc", subtype = "Misc", slot = "None", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 48677, name = "Champion's Deathdealer Breastplate", type = "Armor", subtype = "Mail", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 48683, name = "Mystical Vest of Elements", type = "Armor", subtype = "Mail", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 48685, name = "Polished Breastplate of Valor", type = "Armor", subtype = "Plate", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 48687, name = "Preened Ironfeather Breastplate", type = "Armor", subtype = "Leather", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 48689, name = "Stained Shadowcraft Tunic", type = "Armor", subtype = "Leather", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 48691, name = "Tattered Dreadmist Robe", type = "Armor", subtype = "Cloth", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 48716, name = "Venerable Mass of McGowan", type = "Weapon", subtype = "Mace", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 48718, name = "Repurposed Lava Dredger", type = "Weapon", subtype = "Two-Handed Mace", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
-    { id = 50255, name = "Dread Pirate Ring", type = "Armor", subtype = "Ring", slot = "Finger", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 38691, name = "Ancestral Claymore", icon = "inv_sword_92", type = "Weapon", subtype = "Two-Handed Sword", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42943, name = "Bloodied Arcanite Reaper", icon = "inv_axe_09", type = "Weapon", subtype = "Axe", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42944, name = "Balanced Heartseeker", icon = "inv_sword_17", type = "Weapon", subtype = "Dagger", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42945, name = "Venerable Dal'Rend's Sacred Charge", icon = "inv_sword_43", type = "Weapon", subtype = "Sword", slot = "Main Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42946, name = "Charmed Ancient Bone Bow", icon = "inv_weapon_bow_08", type = "Weapon", subtype = "Bow", slot = "Ranged", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42947, name = "Dignified Headmaster's Charge", icon = "inv_jewelry_talisman_12", type = "Weapon", subtype = "Staff", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42948, name = "Devout Aurastone Hammer", icon = "inv_hammer_05", type = "Weapon", subtype = "Mace", slot = "Main Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42949, name = "Polished Spaulders of Valor", icon = "inv_shoulder_30", type = "Armor", subtype = "Plate", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42950, name = "Champion Herod's Shoulder", icon = "inv_shoulder_01", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42951, name = "Mystical Pauldrons of Elements", icon = "inv_shoulder_29", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42952, name = "Stained Shadowcraft Spaulders", icon = "inv_shoulder_07", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42984, name = "Preened Ironfeather Shoulders", icon = "inv_shoulder_06", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42985, name = "Tattered Dreadmist Mantle", icon = "inv_misc_bone_taurenskull_01", type = "Armor", subtype = "Cloth", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42991, name = "Swift Hand of Justice", icon = "inv_jewelry_talisman_01", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42992, name = "Discerning Eye of the Beast", icon = "inv_jewelry_talisman_08", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44090, name = "Test Mail Shoulder 2", icon = "inv_shoulder_01", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44091, name = "Sharpened Scarlet Kris", icon = "inv_weapon_shortblade_03", type = "Weapon", subtype = "Dagger", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44092, name = "Reforged Truesilver Champion", icon = "inv_sword_19", type = "Weapon", subtype = "Two-Handed Sword", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44093, name = "Upgraded Dwarven Hand Cannon", icon = "inv_weapon_rifle_09", type = "Weapon", subtype = "Gun", slot = "Ranged", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44094, name = "The Blessed Hammer of Grace", icon = "inv_hammer_07", type = "Weapon", subtype = "Mace", slot = "Main Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44095, name = "Grand Staff of Jordan", icon = "inv_staff_13", type = "Weapon", subtype = "Staff", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44096, name = "Battleworn Thrash Blade", icon = "inv_sword_36", type = "Weapon", subtype = "Sword", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44097, name = "Inherited Insignia of the Horde", icon = "inv_jewelry_trinketpvp_02", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Horde", level = 1, reqLevel = 1 },
+    { id = 44098, name = "Inherited Insignia of the Alliance", icon = "inv_jewelry_trinketpvp_01", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Alliance", level = 1, reqLevel = 1 },
+    { id = 44099, name = "Strengthened Stockade Pauldrons", icon = "inv_shoulder_20", type = "Armor", subtype = "Plate", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44100, name = "Pristine Lightforge Spaulders", icon = "inv_shoulder_10", type = "Armor", subtype = "Plate", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44101, name = "Prized Beastmaster's Mantle", icon = "inv_shoulder_10", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44102, name = "Aged Pauldrons of The Five Thunders", icon = "inv_shoulder_29", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44103, name = "Exceptional Stormshroud Shoulders", icon = "inv_shoulder_05", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44105, name = "Lasting Feralheart Spaulders", icon = "inv_shoulder_01", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44107, name = "Exquisite Sunderseer Mantle", icon = "inv_shoulder_02", type = "Armor", subtype = "Cloth", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44115, name = "Wintergrasp Commendation", icon = "spell_frost_wizardmark", type = "Misc", subtype = "Misc", slot = "None", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48677, name = "Champion's Deathdealer Breastplate", icon = "inv_chest_chain_07", type = "Armor", subtype = "Mail", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48683, name = "Mystical Vest of Elements", icon = "inv_chest_chain_11", type = "Armor", subtype = "Mail", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48685, name = "Polished Breastplate of Valor", icon = "inv_chest_plate03", type = "Armor", subtype = "Plate", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48687, name = "Preened Ironfeather Breastplate", icon = "inv_chest_leather_06", type = "Armor", subtype = "Leather", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48689, name = "Stained Shadowcraft Tunic", icon = "inv_chest_leather_07", type = "Armor", subtype = "Leather", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48691, name = "Tattered Dreadmist Robe", icon = "inv_chest_cloth_49", type = "Armor", subtype = "Cloth", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48716, name = "Venerable Mass of McGowan", icon = "inv_hammer_17", type = "Weapon", subtype = "Mace", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48718, name = "Repurposed Lava Dredger", icon = "inv_gizmo_02", type = "Weapon", subtype = "Two-Handed Mace", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 50255, name = "Dread Pirate Ring", icon = "inv_jewelry_ring_39", type = "Armor", subtype = "Ring", slot = "Finger", faction = "Both", level = 1, reqLevel = 1 },
 }
 local ResetCommandScroll
 
@@ -569,6 +569,16 @@ local function FormatBrowserRow(entry)
     return entry.id .. " - " .. entry.name .. " | " .. entry.speed .. " | " .. entry.movement .. " | lvl " .. entry.level .. classText
 end
 
+local function ShowItemTooltip(owner, entry)
+    if not entry then
+        return
+    end
+
+    GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    GameTooltip:SetHyperlink("item:" .. entry.id .. ":0:0:0:0:0:0:0")
+    GameTooltip:Show()
+end
+
 local function RefreshMountRows()
     if not state.mountMode then
         return
@@ -622,6 +632,17 @@ local function RefreshMountRows()
             row.entry = entry
             row.action:SetText(state.browserType == "heirlooms" and "Add" or "Learn")
             row.label:SetText(FormatBrowserRow(entry))
+            row.label:ClearAllPoints()
+            if state.browserType == "heirlooms" and entry.icon and entry.icon ~= "" then
+                row.icon:SetTexture("Interface\\Icons\\" .. entry.icon)
+                row.icon:Show()
+                row.label:SetPoint("LEFT", row.icon, "RIGHT", 5, 0)
+                row.label:SetWidth(260)
+            else
+                row.icon:Hide()
+                row.label:SetPoint("LEFT", 0, 0)
+                row.label:SetWidth(285)
+            end
             row:Show()
         elseif row then
             row.entry = nil
@@ -925,6 +946,7 @@ local function BuildCommandsPanel(parent)
         local row = CreateFrame("Frame", "GMCC_MountRow" .. i, panel)
         row:SetWidth(360)
         row:SetHeight(24)
+        row:EnableMouse(true)
         if i == 1 then
             row:SetPoint("TOPLEFT", GMCC_MountStatus, "BOTTOMLEFT", 0, -8)
         else
@@ -935,6 +957,12 @@ local function BuildCommandsPanel(parent)
         row.label:SetPoint("LEFT", 0, 0)
         row.label:SetWidth(285)
 
+        row.icon = row:CreateTexture(nil, "ARTWORK")
+        row.icon:SetWidth(20)
+        row.icon:SetHeight(20)
+        row.icon:SetPoint("LEFT", 0, 0)
+        row.icon:Hide()
+
         row.action = CreateButton(row, nil, "Learn", 62, 22)
         row.action:SetPoint("RIGHT", 0, 0)
         row.action:SetScript("OnClick", function(self)
@@ -944,6 +972,14 @@ local function BuildCommandsPanel(parent)
             elseif parent.entry then
                 RunCommand(".learn " .. parent.entry.id)
             end
+        end)
+        row:SetScript("OnEnter", function(self)
+            if state.browserType == "heirlooms" and self.entry then
+                ShowItemTooltip(self, self.entry)
+            end
+        end)
+        row:SetScript("OnLeave", function()
+            GameTooltip:Hide()
         end)
 
         row:Hide()
@@ -1052,6 +1088,7 @@ loader:SetScript("OnEvent", function(self, event, arg1)
     BuildLauncherButton()
     Print("loaded. Type /gmcc or /agm.")
 end)
+
 
 
 

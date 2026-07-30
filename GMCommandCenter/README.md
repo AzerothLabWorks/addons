@@ -59,7 +59,7 @@ Use the **Heirloom** button next to **Items** to browse embedded offline heirloo
 .additem <itemId> 1
 ```
 
-The top search box filters heirloom names, item IDs, slots such as `Shoulder` or `Trinket`, armor/weapon types such as `Plate` or `Staff`, and faction. Use **Prev** and **Next** to browse broader result sets, then click **Add** on a result to add one copy to your inventory.
+The top search box filters heirloom names, item IDs, slots such as `Shoulder` or `Trinket`, armor/weapon types such as `Plate` or `Staff`, and faction. Use **Prev** and **Next** to browse broader result sets, hover a result icon to inspect the item tooltip, then click **Add** to add one copy to your inventory.
 
 ## Mount Browser
 
