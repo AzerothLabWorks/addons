@@ -8,6 +8,7 @@ local state = {
     tab = "commands",
     rows = {},
     mountMode = false,
+    browserType = nil,
     mountPage = 1,
     mountRows = {},
     commandDetailControls = {},
@@ -307,6 +308,50 @@ GMCC_MOUNT_SPELLS = GMCC_MOUNT_SPELLS or {
     { id = 71342, name = "Big Love Rocket", speed = "?", movement = "Unknown", level = 0 },
     { id = 71810, name = "Wrathful Gladiator's Frost Wyrm", speed = "+310%", movement = "Flying", level = 1 },
 }
+-- Heirloom item data derived from the WotLKDB item filter qu=7;minle=1;maxle=1.
+GMCC_HEIRLOOM_ITEMS = GMCC_HEIRLOOM_ITEMS or {
+    { id = 38691, name = "Ancestral Claymore", type = "Weapon", subtype = "Two-Handed Sword", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42943, name = "Bloodied Arcanite Reaper", type = "Weapon", subtype = "Axe", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42944, name = "Balanced Heartseeker", type = "Weapon", subtype = "Dagger", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42945, name = "Venerable Dal'Rend's Sacred Charge", type = "Weapon", subtype = "Sword", slot = "Main Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42946, name = "Charmed Ancient Bone Bow", type = "Weapon", subtype = "Bow", slot = "Ranged", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42947, name = "Dignified Headmaster's Charge", type = "Weapon", subtype = "Staff", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42948, name = "Devout Aurastone Hammer", type = "Weapon", subtype = "Mace", slot = "Main Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42949, name = "Polished Spaulders of Valor", type = "Armor", subtype = "Plate", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42950, name = "Champion Herod's Shoulder", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42951, name = "Mystical Pauldrons of Elements", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42952, name = "Stained Shadowcraft Spaulders", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42984, name = "Preened Ironfeather Shoulders", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42985, name = "Tattered Dreadmist Mantle", type = "Armor", subtype = "Cloth", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42991, name = "Swift Hand of Justice", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 42992, name = "Discerning Eye of the Beast", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44090, name = "Test Mail Shoulder 2", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44091, name = "Sharpened Scarlet Kris", type = "Weapon", subtype = "Dagger", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44092, name = "Reforged Truesilver Champion", type = "Weapon", subtype = "Two-Handed Sword", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44093, name = "Upgraded Dwarven Hand Cannon", type = "Weapon", subtype = "Gun", slot = "Ranged", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44094, name = "The Blessed Hammer of Grace", type = "Weapon", subtype = "Mace", slot = "Main Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44095, name = "Grand Staff of Jordan", type = "Weapon", subtype = "Staff", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44096, name = "Battleworn Thrash Blade", type = "Weapon", subtype = "Sword", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44097, name = "Inherited Insignia of the Horde", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Horde", level = 1, reqLevel = 1 },
+    { id = 44098, name = "Inherited Insignia of the Alliance", type = "Armor", subtype = "Trinket", slot = "Trinket", faction = "Alliance", level = 1, reqLevel = 1 },
+    { id = 44099, name = "Strengthened Stockade Pauldrons", type = "Armor", subtype = "Plate", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44100, name = "Pristine Lightforge Spaulders", type = "Armor", subtype = "Plate", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44101, name = "Prized Beastmaster's Mantle", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44102, name = "Aged Pauldrons of The Five Thunders", type = "Armor", subtype = "Mail", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44103, name = "Exceptional Stormshroud Shoulders", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44105, name = "Lasting Feralheart Spaulders", type = "Armor", subtype = "Leather", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44107, name = "Exquisite Sunderseer Mantle", type = "Armor", subtype = "Cloth", slot = "Shoulder", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 44115, name = "Wintergrasp Commendation", type = "Misc", subtype = "Misc", slot = "None", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48677, name = "Champion's Deathdealer Breastplate", type = "Armor", subtype = "Mail", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48683, name = "Mystical Vest of Elements", type = "Armor", subtype = "Mail", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48685, name = "Polished Breastplate of Valor", type = "Armor", subtype = "Plate", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48687, name = "Preened Ironfeather Breastplate", type = "Armor", subtype = "Leather", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48689, name = "Stained Shadowcraft Tunic", type = "Armor", subtype = "Leather", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48691, name = "Tattered Dreadmist Robe", type = "Armor", subtype = "Cloth", slot = "Chest", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48716, name = "Venerable Mass of McGowan", type = "Weapon", subtype = "Mace", slot = "One-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 48718, name = "Repurposed Lava Dredger", type = "Weapon", subtype = "Two-Handed Mace", slot = "Two-Hand", faction = "Both", level = 1, reqLevel = 1 },
+    { id = 50255, name = "Dread Pirate Ring", type = "Armor", subtype = "Ring", slot = "Finger", faction = "Both", level = 1, reqLevel = 1 },
+}
 local ResetCommandScroll
 
 local function Print(message)
@@ -452,6 +497,7 @@ end
 
 local function HideMountRows()
     state.mountMode = false
+    state.browserType = nil
     if GMCC_MountStatus then
         GMCC_MountStatus:Hide()
     end
@@ -476,28 +522,51 @@ local function SetCommandControlsShown(isShown)
     end
 end
 
-local function MatchesMount(mount)
+local function MatchesBrowserEntry(entry)
     local needle = state.filter or ""
     if needle == "" then
         return true
     end
 
-    local haystack = mount.id .. " " .. mount.name .. " " .. mount.speed .. " " .. mount.movement .. " " .. (mount.class or "")
+    local haystack = entry.id .. " " .. entry.name .. " "
+        .. (entry.speed or "") .. " " .. (entry.movement or "") .. " " .. (entry.class or "") .. " "
+        .. (entry.type or "") .. " " .. (entry.subtype or "") .. " " .. (entry.slot or "") .. " "
+        .. (entry.faction or "")
     return WildcardMatch(haystack, needle)
 end
 
-local function FilterMounts()
+local function GetBrowserData()
+    if state.browserType == "heirlooms" then
+        return GMCC_HEIRLOOM_ITEMS
+    end
+    return GMCC_MOUNT_SPELLS
+end
+
+local function FilterBrowserEntries()
     local results = {}
-    if not GMCC_MOUNT_SPELLS then
+    local data = GetBrowserData()
+    if not data then
         return results
     end
 
-    for _, mount in ipairs(GMCC_MOUNT_SPELLS) do
-        if MatchesMount(mount) then
-            table.insert(results, mount)
+    for _, entry in ipairs(data) do
+        if MatchesBrowserEntry(entry) then
+            table.insert(results, entry)
         end
     end
     return results
+end
+
+local function FormatBrowserRow(entry)
+    if state.browserType == "heirlooms" then
+        return entry.id .. " - " .. entry.name .. " | " .. entry.slot .. " | " .. entry.subtype .. " | " .. entry.faction .. " | lvl " .. entry.reqLevel
+    end
+
+    local classText = ""
+    if entry.class and entry.class ~= "" then
+        classText = " | " .. entry.class
+    end
+    return entry.id .. " - " .. entry.name .. " | " .. entry.speed .. " | " .. entry.movement .. " | lvl " .. entry.level .. classText
 end
 
 local function RefreshMountRows()
@@ -505,9 +574,13 @@ local function RefreshMountRows()
         return
     end
 
-    local mounts = FilterMounts()
-    local total = table.getn(mounts)
-    local hasMountData = GMCC_MOUNT_SPELLS ~= nil
+    local entries = FilterBrowserEntries()
+    local total = table.getn(entries)
+    local hasBrowserData = GetBrowserData() ~= nil
+    local noun = "mount spells"
+    if state.browserType == "heirlooms" then
+        noun = "heirloom items"
+    end
     local maxPage = math.max(1, math.ceil(total / MOUNT_ROWS))
     if state.mountPage > maxPage then
         state.mountPage = maxPage
@@ -519,11 +592,11 @@ local function RefreshMountRows()
     local endIndex = math.min(startIndex + MOUNT_ROWS - 1, total)
     if GMCC_MountStatus then
         if total > 0 then
-            GMCC_MountStatus:SetText("Showing " .. startIndex .. "-" .. endIndex .. " of " .. total .. " mount spells.")
-        elseif not hasMountData then
-            GMCC_MountStatus:SetText("Mount data did not initialize. Recopy the updated GMCommandCenter addon folder.")
+            GMCC_MountStatus:SetText("Showing " .. startIndex .. "-" .. endIndex .. " of " .. total .. " " .. noun .. ".")
+        elseif not hasBrowserData then
+            GMCC_MountStatus:SetText("Offline data did not initialize. Recopy the updated GMCommandCenter addon folder.")
         else
-            GMCC_MountStatus:SetText("No mount spells match this filter.")
+            GMCC_MountStatus:SetText("No " .. noun .. " match this filter.")
         end
         GMCC_MountStatus:Show()
     end
@@ -544,17 +617,14 @@ local function RefreshMountRows()
 
     for i = 1, MOUNT_ROWS do
         local row = state.mountRows[i]
-        local mount = mounts[startIndex + i - 1]
-        if row and mount then
-            local classText = ""
-            if mount.class and mount.class ~= "" then
-                classText = " | " .. mount.class
-            end
-            row.mount = mount
-            row.label:SetText(mount.id .. " - " .. mount.name .. " | " .. mount.speed .. " | " .. mount.movement .. " | lvl " .. mount.level .. classText)
+        local entry = entries[startIndex + i - 1]
+        if row and entry then
+            row.entry = entry
+            row.action:SetText(state.browserType == "heirlooms" and "Add" or "Learn")
+            row.label:SetText(FormatBrowserRow(entry))
             row:Show()
         elseif row then
-            row.mount = nil
+            row.entry = nil
             row:Hide()
         end
     end
@@ -562,6 +632,7 @@ end
 
 local function ShowMountBrowser()
     state.mountMode = true
+    state.browserType = "mounts"
     state.mountPage = 1
     state.selected = nil
     state.filter = ""
@@ -574,6 +645,26 @@ local function ShowMountBrowser()
     GMCC_MetaText:SetText("WotLKDB Mounts skill 777")
     GMCC_SyntaxText:SetText(".learn <spellId>")
     GMCC_HelpText:SetText("Mount results are offline spell data from the Mounts category. Use the top search box for names, speed values like 310, or movement types like Ground and Flying.")
+    SetEditBoxText(GMCC_CommandBox, "")
+    SetEditBoxText(GMCC_ArgsBox, "")
+    RefreshMountRows()
+end
+
+local function ShowHeirloomBrowser()
+    state.mountMode = true
+    state.browserType = "heirlooms"
+    state.mountPage = 1
+    state.selected = nil
+    state.filter = ""
+    SetCommandControlsShown(false)
+    if GMCC_FilterBox and GMCC_FilterBox:GetText() ~= "" then
+        GMCC_FilterBox:SetText("")
+    end
+
+    GMCC_TitleText:SetText("Heirloom Items")
+    GMCC_MetaText:SetText("WotLKDB Heirloom quality")
+    GMCC_SyntaxText:SetText(".additem <itemId> 1")
+    GMCC_HelpText:SetText("Heirloom results are embedded offline item data. Use the top search box for item names, IDs, slots like Shoulder or Trinket, armor types like Plate, or faction.")
     SetEditBoxText(GMCC_CommandBox, "")
     SetEditBoxText(GMCC_ArgsBox, "")
     RefreshMountRows()
@@ -701,6 +792,13 @@ local function BuildCommandsPanel(parent)
                 ShowMountBrowser()
             end)
             lastButton = mountButton
+        elseif cat == "Items" then
+            local heirloomButton = CreateButton(panel, nil, "Heirloom", 78, 22)
+            heirloomButton:SetPoint("LEFT", lastButton, "RIGHT", 4, 0)
+            heirloomButton:SetScript("OnClick", function()
+                ShowHeirloomBrowser()
+            end)
+            lastButton = heirloomButton
         end
     end
 
@@ -837,12 +935,14 @@ local function BuildCommandsPanel(parent)
         row.label:SetPoint("LEFT", 0, 0)
         row.label:SetWidth(285)
 
-        row.learn = CreateButton(row, nil, "Learn", 62, 22)
-        row.learn:SetPoint("RIGHT", 0, 0)
-        row.learn:SetScript("OnClick", function(self)
+        row.action = CreateButton(row, nil, "Learn", 62, 22)
+        row.action:SetPoint("RIGHT", 0, 0)
+        row.action:SetScript("OnClick", function(self)
             local parent = self:GetParent()
-            if parent.mount then
-                RunCommand(".learn " .. parent.mount.id)
+            if parent.entry and state.browserType == "heirlooms" then
+                RunCommand(".additem " .. parent.entry.id .. " 1")
+            elseif parent.entry then
+                RunCommand(".learn " .. parent.entry.id)
             end
         end)
 
@@ -952,5 +1052,7 @@ loader:SetScript("OnEvent", function(self, event, arg1)
     BuildLauncherButton()
     Print("loaded. Type /gmcc or /agm.")
 end)
+
+
 
 

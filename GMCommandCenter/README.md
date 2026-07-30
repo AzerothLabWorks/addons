@@ -32,6 +32,7 @@ The addon sends AzerothCore GM commands through chat, so your account still need
 - Parameter box that builds the final command before execution.
 - Server-side `.help` shortcut for the selected command.
 - Movable **GMCC** launcher button with saved position.
+- **Heirloom** button next to **Items** that opens an embedded offline item browser with Add buttons.
 - **Mount** button next to **Spells** that opens an embedded offline Mounts spell browser with speed/type details and Learn buttons.
 - Quick action buttons for common GM commands.
 
@@ -49,6 +50,16 @@ frost*
 The addon understands wildcards in its command search.
 
 For money commands, use the command browser's **Character** category and select `modify money`.
+
+## Heirloom Browser
+
+Use the **Heirloom** button next to **Items** to browse embedded offline heirloom item data from the WotLKDB heirloom filter.
+
+```text
+.additem <itemId> 1
+```
+
+The top search box filters heirloom names, item IDs, slots such as `Shoulder` or `Trinket`, armor/weapon types such as `Plate` or `Staff`, and faction. Use **Prev** and **Next** to browse broader result sets, then click **Add** on a result to add one copy to your inventory.
 
 ## Mount Browser
 
