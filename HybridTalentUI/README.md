@@ -55,11 +55,23 @@ The addon also creates a movable Hybrid launcher button near the microbar. Left-
 - Right-click to unlearn supported hybrid spells and talents.
 - Known filter support for learned hybrid spells/talents.
 - Action-bar preservation for learned hybrid spells and talent-granted spells.
-- Shaman weapon imbue reminders for main-hand and off-hand temporary weapon enchants.
+- Weapon effect reminders for main-hand and off-hand temporary weapon enchants, including Shaman imbues and Rogue poisons.
+- Movable Hybrid Resources frame showing Mana, Rage, and Energy together for multi-resource builds.
 
-## Weapon Imbue Reminder
+## Hybrid Resources
 
-The QA addon can remember the last supported shaman weapon imbue the player cast and show separate movable `MH` and `OH` reminder buttons when the main-hand or off-hand temporary enchant is missing or close to expiring. The buttons use client-side `GetWeaponEnchantInfo()` state and do not change server spell validation.
+The QA addon can show a movable three-bar resource frame for hybrid characters that use more than one resource type. This helps rage-primary or energy-primary characters manage hidden mana, and mana-primary characters manage rage or energy abilities.
+
+Useful commands:
+
+- `/hyui resources` shows resource frame status.
+- `/hyui resources on` enables the frame.
+- `/hyui resources off` hides the frame.
+- `/hyui resources reset` restores the default frame position.
+
+## Weapon Effect Reminder
+
+The QA addon can remember the last supported Shaman imbue or Rogue poison the player cast and show separate movable `MH` and `OH` reminder buttons when the main-hand or off-hand temporary enchant is missing or close to expiring. The buttons use client-side `GetWeaponEnchantInfo()` state and do not change server spell validation.
 
 Tested shaman imbues:
 
@@ -69,15 +81,24 @@ Tested shaman imbues:
 - Windfury Weapon
 - Earthliving Weapon
 
+Tested or targeted Rogue poisons:
+
+- Instant Poison
+- Deadly Poison
+- Crippling Poison
+- Mind-numbing Poison
+- Wound Poison
+- Anesthetic Poison
+
 Useful commands:
 
-- `/hyui imbue` shows reminder status.
-- `/hyui imbue on` enables reminders.
-- `/hyui imbue off` disables reminders.
-- `/hyui imbue reset` clears remembered imbues and saved reminder positions.
-- `/hyui imbue threshold <seconds>` changes the low-duration reminder threshold.
+- `/hyui weapon`, `/hyui imbue`, or `/hyui poison` shows reminder status.
+- `/hyui weapon on` enables reminders.
+- `/hyui weapon off` disables reminders.
+- `/hyui weapon reset` clears remembered weapon effects and saved reminder positions.
+- `/hyui weapon threshold <seconds>` changes the low-duration reminder threshold.
 
-Rogue poison reminders are not implemented yet. Follow-up QA targets include Rogue poisons and other temporary weapon effects once those characters are being tested.
+The `imbue` and `poison` command aliases support the same `on`, `off`, `reset`, `debug`, and `threshold` subcommands.
 
 ## Spell Descriptions
 
