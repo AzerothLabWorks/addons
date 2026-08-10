@@ -1,0 +1,9 @@
+## Interface: 70300
+## Title: GM Command Center - Legion
+## Notes: LegionCore GM command helper for WoW 7.3.5 build 26365.
+## Author: AzerothLabWorks
+## Version: 0.1.0-legion
+## SavedVariables: GMCommandCenterLegionDB
+
+GMCommandCenter_Legion_Data.lua
+GMCommandCenter_Legion.lua
