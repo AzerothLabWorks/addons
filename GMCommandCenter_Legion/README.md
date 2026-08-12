@@ -32,6 +32,19 @@ Select the **Spells** category and click **Mount**. The browser reads the client
 
 Close and reopen the mount browser after learning mounts to refresh collection status.
 
+## Legion heirloom browser
+
+Select **Items**, then click **Heirloom**. The browser reads the canonical
+heirloom catalog from the 7.3.5 client's `C_Heirloom` collection API instead of
+using the WoTLK heirloom-quality item list.
+
+- Search by item name, item ID, equipment slot, armor or weapon type, or
+  `Collected` / `Not collected`.
+- Hover a row for the normal item tooltip.
+- Click **Add** to run `.additem <itemID> 1`.
+
+The list is rebuilt when the browser opens so collection state remains current.
+
 ## Commands
 
 Commands and quick actions are tailored to the LegionCore command table, including `.tele`, `.repairitems`, `.addmythickey`, Legion lookups, character controls, NPC tools, quests, and server management.
