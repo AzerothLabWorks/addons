@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <cctype>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -93,43 +95,54 @@ bool IsUsefulName(std::string const& name)
     return true;
 }
 
-std::string EscapeLua(std::string const& value)
+std::string SanitizeField(std::string value)
 {
-    std::string escaped;
-    escaped.reserve(value.size() + 8);
-    for (char ch : value)
-    {
-        switch (ch)
-        {
-            case '\\': escaped += "\\\\"; break;
-            case '"': escaped += "\\\""; break;
-            case '\n': escaped += "\\n"; break;
-            case '\r': break;
-            default: escaped += ch; break;
-        }
-    }
-    return escaped;
+    std::replace(value.begin(), value.end(), '\t', ' ');
+    std::replace(value.begin(), value.end(), '\n', ' ');
+    value.erase(std::remove(value.begin(), value.end(), '\r'), value.end());
+    if (value.find("]=]") != std::string::npos)
+        throw std::runtime_error("Item name contains the Lua chunk delimiter: " + value);
+    return value;
 }
 
-void WriteCatalog(std::string const& outputPath, std::vector<CatalogEntry> const& entries)
+void WriteCatalogChunk(std::string const& outputPath, std::string const& catalogName,
+    std::vector<CatalogEntry const*> const& entries, std::size_t begin, std::size_t end)
 {
     std::ofstream output(outputPath, std::ios::binary | std::ios::trunc);
     if (!output)
         throw std::runtime_error("Unable to open output file: " + outputPath);
 
     output << "-- Generated from the enUS build-26365 Item.db2 and ItemSparse.db2 files.\n"
-              "-- Do not edit by hand; regenerate with tools/legion-item-catalog.\n"
-              "LGMCC_EQUIPMENT_CATALOG = {\n";
+              "-- Compact text is decoded only when the equipment browser is opened.\n"
+              "LGMCC_EQUIPMENT_CHUNKS = LGMCC_EQUIPMENT_CHUNKS or { armor = {}, weapons = {} }\n"
+              "table.insert(LGMCC_EQUIPMENT_CHUNKS." << catalogName << ", [=[\n";
 
-    for (CatalogEntry const& entry : entries)
+    for (std::size_t index = begin; index < end; ++index)
     {
-        output << "{" << entry.Id << ",\"" << EscapeLua(entry.Name) << "\"," << unsigned(entry.ClassId)
-               << "," << unsigned(entry.SubclassId) << "," << unsigned(entry.InventoryType) << ","
-               << entry.ItemLevel << "," << int(entry.RequiredLevel) << "," << unsigned(entry.Quality)
-               << "},\n";
+        CatalogEntry const& entry = *entries[index];
+        output << entry.Id << '\t' << SanitizeField(entry.Name) << '\t' << unsigned(entry.SubclassId)
+               << '\t' << unsigned(entry.InventoryType) << '\t' << entry.ItemLevel << '\t'
+               << int(entry.RequiredLevel) << '\t' << unsigned(entry.Quality) << '\n';
     }
 
-    output << "}\n";
+    output << "]=])\n";
+}
+
+std::size_t WriteCatalog(std::string const& outputDirectory, std::string const& catalogName,
+    std::vector<CatalogEntry const*> const& entries)
+{
+    constexpr std::size_t RecordsPerChunk = 4000;
+    std::size_t fileCount = (entries.size() + RecordsPerChunk - 1) / RecordsPerChunk;
+    for (std::size_t fileIndex = 0; fileIndex < fileCount; ++fileIndex)
+    {
+        std::ostringstream fileName;
+        fileName << outputDirectory << '/' << catalogName << '_' << std::setw(2) << std::setfill('0')
+                 << (fileIndex + 1) << ".lua";
+        std::size_t begin = fileIndex * RecordsPerChunk;
+        std::size_t end = std::min(begin + RecordsPerChunk, entries.size());
+        WriteCatalogChunk(fileName.str(), catalogName, entries, begin, end);
+    }
+    return fileCount;
 }
 }
 
@@ -137,7 +150,7 @@ int main(int argc, char** argv)
 {
     if (argc != 3)
     {
-        std::cerr << "Usage: legion-item-catalog <path-to-enUS-dbc-directory> <output-lua>\n";
+        std::cerr << "Usage: legion-item-catalog <path-to-enUS-dbc-directory> <output-directory>\n";
         return 2;
     }
 
@@ -183,8 +196,17 @@ int main(int argc, char** argv)
             return left.Id < right.Id;
         });
 
-        WriteCatalog(argv[2], entries);
-        std::cout << "Wrote " << entries.size() << " equipment records to " << argv[2] << '\n';
+        std::vector<CatalogEntry const*> armor;
+        std::vector<CatalogEntry const*> weapons;
+        armor.reserve(entries.size());
+        weapons.reserve(entries.size());
+        for (CatalogEntry const& entry : entries)
+            (entry.ClassId == 2 ? weapons : armor).push_back(&entry);
+
+        std::size_t armorFiles = WriteCatalog(argv[2], "armor", armor);
+        std::size_t weaponFiles = WriteCatalog(argv[2], "weapons", weapons);
+        std::cout << "Wrote " << armor.size() << " armor and " << weapons.size() << " weapon records across "
+                  << (armorFiles + weaponFiles) << " compact Lua files in " << argv[2] << '\n';
     }
     catch (std::exception const& error)
     {

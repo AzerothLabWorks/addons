@@ -2,9 +2,26 @@
 ## Title: GM Command Center - Legion
 ## Notes: LegionCore GM command helper for WoW 7.3.5 build 26365.
 ## Author: AzerothLabWorks
-## Version: 0.3.0-legion
+## Version: 0.3.1-legion
 ## SavedVariables: GMCommandCenterLegionDB
 
 GMCommandCenter_Legion_Data.lua
-GMCommandCenter_Legion_Equipment.lua
+Equipment\armor_01.lua
+Equipment\armor_02.lua
+Equipment\armor_03.lua
+Equipment\armor_04.lua
+Equipment\armor_05.lua
+Equipment\armor_06.lua
+Equipment\armor_07.lua
+Equipment\armor_08.lua
+Equipment\armor_09.lua
+Equipment\armor_10.lua
+Equipment\armor_11.lua
+Equipment\armor_12.lua
+Equipment\armor_13.lua
+Equipment\armor_14.lua
+Equipment\armor_15.lua
+Equipment\weapons_01.lua
+Equipment\weapons_02.lua
+Equipment\weapons_03.lua
 GMCommandCenter_Legion.lua

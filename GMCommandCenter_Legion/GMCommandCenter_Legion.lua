@@ -12,6 +12,7 @@ local state = {
     mountPage = 1,
     mountRows = {},
     browserResults = nil,
+    filterSerial = 0,
     commandDetailControls = {},
 }
 
@@ -142,18 +143,28 @@ local function IsItemBrowser()
 end
 
 local function BrowserEntryID(entry)
-    return IsEquipmentBrowser() and entry[1] or entry.id
-end
-
-local function EquipmentSubtype(entry)
-    if entry[3] == 2 then
-        return WEAPON_SUBTYPES[entry[4]] or ("Weapon subclass " .. entry[4])
+    if IsEquipmentBrowser() then
+        return tonumber(string.match(entry, "^(%d+)"))
     end
-    return ARMOR_SUBTYPES[entry[4]] or ("Armor subclass " .. entry[4])
+    return entry.id
 end
 
-local function EquipmentSlot(entry)
-    return INVENTORY_SLOTS[entry[5]] or ("Inventory type " .. entry[5])
+local function DecodeEquipmentEntry(entry)
+    local id, name, subclassID, inventoryType, itemLevel, requiredLevel, quality =
+        string.match(entry, "^(%d+)\t([^\t]*)\t(%d+)\t(%d+)\t(%d+)\t(-?%d+)\t(%d+)$")
+    return tonumber(id), name, tonumber(subclassID), tonumber(inventoryType), tonumber(itemLevel),
+        tonumber(requiredLevel), tonumber(quality)
+end
+
+local function EquipmentSubtype(subclassID)
+    if state.browserType == "weapons" then
+        return WEAPON_SUBTYPES[subclassID] or ("Weapon subclass " .. subclassID)
+    end
+    return ARMOR_SUBTYPES[subclassID] or ("Armor subclass " .. subclassID)
+end
+
+local function EquipmentSlot(inventoryType)
+    return INVENTORY_SLOTS[inventoryType] or ("Inventory type " .. inventoryType)
 end
 
 local function GetLegionHeirloomItems()
@@ -373,24 +384,18 @@ local function SetCommandControlsShown(isShown)
 end
 
 local function MatchesBrowserEntry(entry)
-    if IsEquipmentBrowser() then
-        local expectedClass = state.browserType == "weapons" and 2 or 4
-        if entry[3] ~= expectedClass then
-            return false
-        end
-    end
-
     local needle = state.filter or ""
     if needle == "" then
         return true
     end
 
     if IsEquipmentBrowser() then
-        local quality = ITEM_QUALITY_NAMES[entry[8]] or ("Quality " .. entry[8])
-        local requiredLevel = entry[7] > 0 and entry[7] or "None"
-        local haystack = entry[1] .. " " .. entry[2] .. " " .. EquipmentSubtype(entry) .. " "
-            .. EquipmentSlot(entry) .. " " .. quality .. " item level " .. entry[6] .. " ilevel " .. entry[6]
-            .. " ilvl " .. entry[6] .. " required level " .. requiredLevel .. " req " .. requiredLevel
+        local id, name, subclassID, inventoryType, itemLevel, requiredLevel, qualityID = DecodeEquipmentEntry(entry)
+        local quality = ITEM_QUALITY_NAMES[qualityID] or ("Quality " .. qualityID)
+        requiredLevel = requiredLevel > 0 and requiredLevel or "None"
+        local haystack = id .. " " .. name .. " " .. EquipmentSubtype(subclassID) .. " "
+            .. EquipmentSlot(inventoryType) .. " " .. quality .. " item level " .. itemLevel .. " ilevel " .. itemLevel
+            .. " ilvl " .. itemLevel .. " required level " .. requiredLevel .. " req " .. requiredLevel
         return WildcardMatch(haystack, needle)
     end
 
@@ -405,7 +410,7 @@ local function GetBrowserData()
     if state.browserType == "heirlooms" then
         return GetLegionHeirloomItems()
     elseif IsEquipmentBrowser() then
-        return LGMCC_EQUIPMENT_CATALOG
+        return LGMCC_EQUIPMENT_CHUNKS and LGMCC_EQUIPMENT_CHUNKS[state.browserType]
     end
     return GetLegionMountSpells()
 end
@@ -421,9 +426,19 @@ local function FilterBrowserEntries()
         return results
     end
 
-    for _, entry in ipairs(data) do
-        if MatchesBrowserEntry(entry) then
-            table.insert(results, entry)
+    if IsEquipmentBrowser() then
+        for _, chunk in ipairs(data) do
+            for entry in string.gmatch(chunk, "[^\r\n]+") do
+                if MatchesBrowserEntry(entry) then
+                    table.insert(results, entry)
+                end
+            end
+        end
+    else
+        for _, entry in ipairs(data) do
+            if MatchesBrowserEntry(entry) then
+                table.insert(results, entry)
+            end
         end
     end
     state.browserResults = results
@@ -438,10 +453,11 @@ local function FormatBrowserRow(entry)
     end
 
     if IsEquipmentBrowser() then
-        local requiredLevel = entry[7] > 0 and entry[7] or "None"
-        local quality = ITEM_QUALITY_NAMES[entry[8]] or ("Quality " .. entry[8])
-        return entry[1] .. " - " .. entry[2] .. " | " .. EquipmentSubtype(entry) .. " | "
-            .. EquipmentSlot(entry) .. " | iLvl " .. entry[6] .. " | Req " .. requiredLevel .. " | " .. quality
+        local id, name, subclassID, inventoryType, itemLevel, requiredLevel, qualityID = DecodeEquipmentEntry(entry)
+        requiredLevel = requiredLevel > 0 and requiredLevel or "None"
+        local quality = ITEM_QUALITY_NAMES[qualityID] or ("Quality " .. qualityID)
+        return id .. " - " .. name .. " | " .. EquipmentSubtype(subclassID) .. " | "
+            .. EquipmentSlot(inventoryType) .. " | iLvl " .. itemLevel .. " | Req " .. requiredLevel .. " | " .. quality
     end
 
     local classText = ""
@@ -529,9 +545,9 @@ local function RefreshMountRows()
             row.action:SetText(IsItemBrowser() and "Add" or "Learn")
             row.label:SetText(FormatBrowserRow(entry))
             row.label:ClearAllPoints()
-            local icon = entry.icon
+            local icon = IsEquipmentBrowser() and nil or entry.icon
             if IsEquipmentBrowser() and GetItemInfoInstant then
-                local _, _, _, _, instantIcon = GetItemInfoInstant(entry[1])
+                local _, _, _, _, instantIcon = GetItemInfoInstant(BrowserEntryID(entry))
                 icon = instantIcon
             end
             if icon and icon ~= "" then
@@ -713,10 +729,24 @@ local function BuildCommandsPanel(parent)
     LGMCC_FilterBox:SetScript("OnTextChanged", function(self)
         state.filter = self:GetText() or ""
         state.browserResults = nil
-        ResetCommandScroll()
-        RefreshCommandRows()
-        state.mountPage = 1
-        RefreshMountRows()
+        state.filterSerial = state.filterSerial + 1
+        local serial = state.filterSerial
+
+        local function ApplyFilter()
+            if serial ~= state.filterSerial then
+                return
+            end
+            ResetCommandScroll()
+            RefreshCommandRows()
+            state.mountPage = 1
+            RefreshMountRows()
+        end
+
+        if IsEquipmentBrowser() and C_Timer and C_Timer.After then
+            C_Timer.After(0.2, ApplyFilter)
+        else
+            ApplyFilter()
+        end
     end)
 
     LGMCC_CountText = CreateLabel(panel, "LGMCC_CountText", "", "small")

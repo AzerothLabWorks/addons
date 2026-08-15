@@ -6,8 +6,10 @@ build_root="${LEGION_BUILD_ROOT:-/home/ryan/legion-server-runtime/build-ubuntu18
 data_root="${LEGION_DATA_ROOT:-/home/ryan/legion-server-runtime/data}"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/../.." && pwd)"
-output_path="${1:-$repo_root/GMCommandCenter_Legion/GMCommandCenter_Legion_Equipment.lua}"
+output_path="${1:-$repo_root/GMCommandCenter_Legion/Equipment}"
 binary_path="${TMPDIR:-/tmp}/legion-item-catalog"
+
+mkdir -p "$output_path"
 
 c++ -std=gnu++14 -O2 \
     -I"$core_root/src/common" \

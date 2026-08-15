@@ -61,7 +61,9 @@ Select **Items**, then click **Armor** or **Weapons**. These browsers use the
 - Click **Add** to run `.additem <itemID> 1`.
 
 The browser caches the current search results for fast paging. Any change to
-the search field rebuilds that cache.
+the search field rebuilds that cache. Its catalog is stored as compact text
+chunks and decoded only when Armor or Weapons is opened, keeping normal login
+and reload times close to the earlier addon version.
 
 ## Commands
 
