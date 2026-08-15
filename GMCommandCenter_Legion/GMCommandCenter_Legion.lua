@@ -13,6 +13,9 @@ local state = {
     mountRows = {},
     browserResults = nil,
     filterSerial = 0,
+    equipmentLevelFilter = "any",
+    equipmentTypeFilter = "all",
+    equipmentFilterControls = {},
     commandDetailControls = {},
 }
 
@@ -109,6 +112,67 @@ local ARMOR_SUBTYPES = {
     [7] = "Relic",
 }
 
+local LEVEL_FILTER_OPTIONS = {
+    { key = "any", label = "Any Level" },
+    { key = "usable", label = "At/Below My Level" },
+    { key = "none", label = "No Requirement" },
+    { key = "1-10", label = "Level 1-10", minLevel = 1, maxLevel = 10 },
+    { key = "11-20", label = "Level 11-20", minLevel = 11, maxLevel = 20 },
+    { key = "21-30", label = "Level 21-30", minLevel = 21, maxLevel = 30 },
+    { key = "31-40", label = "Level 31-40", minLevel = 31, maxLevel = 40 },
+    { key = "41-50", label = "Level 41-50", minLevel = 41, maxLevel = 50 },
+    { key = "51-60", label = "Level 51-60", minLevel = 51, maxLevel = 60 },
+    { key = "61-70", label = "Level 61-70", minLevel = 61, maxLevel = 70 },
+    { key = "71-80", label = "Level 71-80", minLevel = 71, maxLevel = 80 },
+    { key = "81-90", label = "Level 81-90", minLevel = 81, maxLevel = 90 },
+    { key = "91-100", label = "Level 91-100", minLevel = 91, maxLevel = 100 },
+    { key = "101-110", label = "Level 101-110", minLevel = 101, maxLevel = 110 },
+}
+
+local ARMOR_FILTER_OPTIONS = {
+    { key = "all", label = "All Armor" },
+    { key = 1, label = "Cloth" },
+    { key = 2, label = "Leather" },
+    { key = 3, label = "Mail" },
+    { key = 4, label = "Plate" },
+    { key = 6, label = "Shields" },
+    { key = 5, label = "Cosmetic" },
+    { key = 0, label = "Miscellaneous" },
+}
+
+local WEAPON_FILTER_OPTIONS = {
+    { key = "all", label = "All Weapons" },
+    { key = "axes", label = "Axes" },
+    { key = "bows", label = "Bows" },
+    { key = "guns", label = "Guns" },
+    { key = "maces", label = "Maces" },
+    { key = "polearms", label = "Polearms" },
+    { key = "swords", label = "Swords" },
+    { key = "warglaives", label = "Warglaives" },
+    { key = "staves", label = "Staves" },
+    { key = "fist", label = "Fist Weapons" },
+    { key = "daggers", label = "Daggers" },
+    { key = "crossbows", label = "Crossbows" },
+    { key = "wands", label = "Wands" },
+    { key = "other", label = "Other Weapons" },
+}
+
+local WEAPON_FILTER_SUBCLASSES = {
+    axes = { [0] = true, [1] = true },
+    bows = { [2] = true },
+    guns = { [3] = true },
+    maces = { [4] = true, [5] = true },
+    polearms = { [6] = true },
+    swords = { [7] = true, [8] = true },
+    warglaives = { [9] = true },
+    staves = { [10] = true },
+    fist = { [13] = true },
+    daggers = { [15] = true },
+    crossbows = { [18] = true },
+    wands = { [19] = true },
+    other = { [11] = true, [12] = true, [14] = true, [16] = true, [17] = true, [20] = true },
+}
+
 local INVENTORY_SLOTS = {
     [1] = "Head",
     [2] = "Neck",
@@ -165,6 +229,36 @@ end
 
 local function EquipmentSlot(inventoryType)
     return INVENTORY_SLOTS[inventoryType] or ("Inventory type " .. inventoryType)
+end
+
+local function RequiredLevelMatches(requiredLevel)
+    local filter = state.equipmentLevelFilter
+    if filter == "any" then
+        return true
+    elseif filter == "usable" then
+        return requiredLevel <= 0 or requiredLevel <= UnitLevel("player")
+    elseif filter == "none" then
+        return requiredLevel <= 0
+    end
+
+    for _, option in ipairs(LEVEL_FILTER_OPTIONS) do
+        if option.key == filter then
+            return requiredLevel >= option.minLevel and requiredLevel <= option.maxLevel
+        end
+    end
+    return true
+end
+
+local function EquipmentTypeMatches(subclassID)
+    local filter = state.equipmentTypeFilter
+    if filter == "all" then
+        return true
+    elseif state.browserType == "armor" then
+        return subclassID == filter
+    end
+
+    local subclasses = WEAPON_FILTER_SUBCLASSES[filter]
+    return subclasses and subclasses[subclassID] or false
 end
 
 local function GetLegionHeirloomItems()
@@ -355,10 +449,46 @@ local function SetEditBoxText(box, text)
     box:SetCursorPosition(0)
 end
 
+local function FindFilterLabel(options, key, fallback)
+    for _, option in ipairs(options) do
+        if option.key == key then
+            return option.label
+        end
+    end
+    return fallback
+end
+
+local function UpdateEquipmentFilterText()
+    if not LGMCC_LevelFilter or not LGMCC_TypeFilter then
+        return
+    end
+
+    local levelLabel = FindFilterLabel(LEVEL_FILTER_OPTIONS, state.equipmentLevelFilter, "Any Level")
+    if state.equipmentLevelFilter == "usable" then
+        levelLabel = "Up to Level " .. UnitLevel("player")
+    end
+    local typeOptions = state.browserType == "weapons" and WEAPON_FILTER_OPTIONS or ARMOR_FILTER_OPTIONS
+    local typeLabel = FindFilterLabel(typeOptions, state.equipmentTypeFilter,
+        state.browserType == "weapons" and "All Weapons" or "All Armor")
+    UIDropDownMenu_SetText(LGMCC_LevelFilter, "Level: " .. levelLabel)
+    UIDropDownMenu_SetText(LGMCC_TypeFilter, "Type: " .. typeLabel)
+end
+
+local function SetEquipmentFiltersShown(isShown)
+    for _, control in ipairs(state.equipmentFilterControls) do
+        if isShown then
+            control:Show()
+        else
+            control:Hide()
+        end
+    end
+end
+
 local function HideMountRows()
     state.mountMode = false
     state.browserType = nil
     state.browserResults = nil
+    SetEquipmentFiltersShown(false)
     if LGMCC_MountStatus then
         LGMCC_MountStatus:Hide()
     end
@@ -385,18 +515,25 @@ end
 
 local function MatchesBrowserEntry(entry)
     local needle = state.filter or ""
-    if needle == "" then
-        return true
-    end
 
     if IsEquipmentBrowser() then
         local id, name, subclassID, inventoryType, itemLevel, requiredLevel, qualityID = DecodeEquipmentEntry(entry)
+        if not RequiredLevelMatches(requiredLevel) or not EquipmentTypeMatches(subclassID) then
+            return false
+        elseif needle == "" then
+            return true
+        end
+
         local quality = ITEM_QUALITY_NAMES[qualityID] or ("Quality " .. qualityID)
         requiredLevel = requiredLevel > 0 and requiredLevel or "None"
         local haystack = id .. " " .. name .. " " .. EquipmentSubtype(subclassID) .. " "
             .. EquipmentSlot(inventoryType) .. " " .. quality .. " item level " .. itemLevel .. " ilevel " .. itemLevel
             .. " ilvl " .. itemLevel .. " required level " .. requiredLevel .. " req " .. requiredLevel
         return WildcardMatch(haystack, needle)
+    end
+
+    if needle == "" then
+        return true
     end
 
     local haystack = entry.id .. " " .. entry.name .. " "
@@ -581,6 +718,7 @@ local function ShowMountBrowser()
     state.selected = nil
     state.filter = ""
     SetCommandControlsShown(false)
+    SetEquipmentFiltersShown(false)
     if LGMCC_FilterBox and LGMCC_FilterBox:GetText() ~= "" then
         LGMCC_FilterBox:SetText("")
     end
@@ -603,6 +741,7 @@ local function ShowHeirloomBrowser()
     state.selected = nil
     state.filter = ""
     SetCommandControlsShown(false)
+    SetEquipmentFiltersShown(false)
     if LGMCC_FilterBox and LGMCC_FilterBox:GetText() ~= "" then
         LGMCC_FilterBox:SetText("")
     end
@@ -617,13 +756,19 @@ local function ShowHeirloomBrowser()
 end
 
 local function ShowEquipmentBrowser(browserType)
+    local previousBrowserType = state.browserType
     state.mountMode = true
     state.browserType = browserType
     state.mountPage = 1
     state.browserResults = nil
     state.selected = nil
     state.filter = ""
+    if previousBrowserType ~= browserType then
+        state.equipmentTypeFilter = "all"
+    end
     SetCommandControlsShown(false)
+    SetEquipmentFiltersShown(true)
+    UpdateEquipmentFilterText()
     if LGMCC_FilterBox and LGMCC_FilterBox:GetText() ~= "" then
         LGMCC_FilterBox:SetText("")
     end
@@ -633,9 +778,9 @@ local function ShowEquipmentBrowser(browserType)
     LGMCC_TitleText:SetText(title)
     LGMCC_MetaText:SetText("Build 7.3.5.26365 DB2 equipment catalog")
     LGMCC_SyntaxText:SetText(".additem <itemId> 1")
-    LGMCC_HelpText:SetText("Browse the equipment defined by this exact Legion client build. Search by name, item ID, "
-        .. typeHelp .. ", slot, quality, item level (for example 'ilvl 910'), or required level (for example 'req 110'). "
-        .. "Hover for complete stats and requirements, then click Add.")
+    LGMCC_HelpText:SetText("Browse the equipment defined by this exact Legion client build. Use the Level and Type "
+        .. "filters, or search by name, item ID, " .. typeHelp .. ", slot, quality, item level (for example 'ilvl 910'), "
+        .. "or required level (for example 'req 110'). Hover for complete stats and requirements, then click Add.")
     SetEditBoxText(LGMCC_CommandBox, "")
     SetEditBoxText(LGMCC_ArgsBox, "")
     RefreshMountRows()
@@ -900,8 +1045,69 @@ local function BuildCommandsPanel(parent)
     table.insert(state.commandDetailControls, help)
     table.insert(state.commandDetailControls, last)
 
+    local function ApplyEquipmentFilter()
+        state.browserResults = nil
+        state.mountPage = 1
+        UpdateEquipmentFilterText()
+        CloseDropDownMenus()
+        RefreshMountRows()
+    end
+
+    LGMCC_LevelFilter = CreateFrame("Frame", "LGMCC_LevelFilter", panel, "UIDropDownMenuTemplate")
+    LGMCC_LevelFilter:SetPoint("TOPLEFT", 262, -184)
+    UIDropDownMenu_SetWidth(LGMCC_LevelFilter, 145)
+    UIDropDownMenu_JustifyText(LGMCC_LevelFilter, "LEFT")
+    UIDropDownMenu_Initialize(LGMCC_LevelFilter, function(_, level)
+        for _, option in ipairs(LEVEL_FILTER_OPTIONS) do
+            local optionKey = option.key
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = option.label
+            if optionKey == "usable" then
+                info.text = option.label .. " (" .. UnitLevel("player") .. ")"
+            end
+            info.checked = state.equipmentLevelFilter == optionKey
+            info.func = function()
+                state.equipmentLevelFilter = optionKey
+                ApplyEquipmentFilter()
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+
+    LGMCC_TypeFilter = CreateFrame("Frame", "LGMCC_TypeFilter", panel, "UIDropDownMenuTemplate")
+    LGMCC_TypeFilter:SetPoint("TOPLEFT", 432, -184)
+    UIDropDownMenu_SetWidth(LGMCC_TypeFilter, 145)
+    UIDropDownMenu_JustifyText(LGMCC_TypeFilter, "LEFT")
+    UIDropDownMenu_Initialize(LGMCC_TypeFilter, function(_, level)
+        local options = state.browserType == "weapons" and WEAPON_FILTER_OPTIONS or ARMOR_FILTER_OPTIONS
+        for _, option in ipairs(options) do
+            local optionKey = option.key
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = option.label
+            info.checked = state.equipmentTypeFilter == optionKey
+            info.func = function()
+                state.equipmentTypeFilter = optionKey
+                ApplyEquipmentFilter()
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+
+    local resetEquipmentFilters = CreateButton(panel, nil, "Reset", 58, 22)
+    resetEquipmentFilters:SetPoint("TOPLEFT", 690, -190)
+    resetEquipmentFilters:SetScript("OnClick", function()
+        state.equipmentLevelFilter = "any"
+        state.equipmentTypeFilter = "all"
+        ApplyEquipmentFilter()
+    end)
+
+    table.insert(state.equipmentFilterControls, LGMCC_LevelFilter)
+    table.insert(state.equipmentFilterControls, LGMCC_TypeFilter)
+    table.insert(state.equipmentFilterControls, resetEquipmentFilters)
+    SetEquipmentFiltersShown(false)
+
     LGMCC_MountStatus = CreateLabel(panel, "LGMCC_MountStatus", "", "small")
-    LGMCC_MountStatus:SetPoint("TOPLEFT", 282, -222)
+    LGMCC_MountStatus:SetPoint("TOPLEFT", 282, -226)
     LGMCC_MountStatus:SetWidth(330)
     LGMCC_MountStatus:Hide()
 

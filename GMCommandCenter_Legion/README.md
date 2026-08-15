@@ -52,6 +52,11 @@ Select **Items**, then click **Armor** or **Weapons**. These browsers use the
 `Item.db2` and `ItemSparse.db2` files, rather than a modern retail database.
 
 - Search by item name or item ID.
+- Filter required level by **At/Below My Level**, **No Requirement**, or
+  ten-level ranges through level 110.
+- Filter armor by material (Cloth, Leather, Mail, Plate, Shields, Cosmetic, or
+  Miscellaneous) and weapons by family (Axes, Maces, Swords, Daggers, Staves,
+  Warglaives, ranged families, and more).
 - Search by slot or subtype, such as `Head`, `Plate`, `Dagger`, or `Two-Hand`.
 - Search by quality, such as `Epic`, `Legendary`, or `Artifact`.
 - Search item level with terms such as `ilvl 910`.
