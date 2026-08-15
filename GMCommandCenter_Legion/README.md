@@ -45,6 +45,24 @@ using the WoTLK heirloom-quality item list.
 
 The list is rebuilt when the browser opens so collection state remains current.
 
+## Legion armor and weapon browser
+
+Select **Items**, then click **Armor** or **Weapons**. These browsers use the
+69,088 equippable item records extracted from the server's enUS build-26365
+`Item.db2` and `ItemSparse.db2` files, rather than a modern retail database.
+
+- Search by item name or item ID.
+- Search by slot or subtype, such as `Head`, `Plate`, `Dagger`, or `Two-Hand`.
+- Search by quality, such as `Epic`, `Legendary`, or `Artifact`.
+- Search item level with terms such as `ilvl 910`.
+- Search required level with terms such as `req 110`.
+- Hover a row to see the client's complete native item tooltip, including all
+  stats and requirements.
+- Click **Add** to run `.additem <itemID> 1`.
+
+The browser caches the current search results for fast paging. Any change to
+the search field rebuilds that cache.
+
 ## Commands
 
 Commands and quick actions are tailored to the LegionCore command table, including `.tele`, `.repairitems`, `.addmythickey`, Legion lookups, character controls, NPC tools, quests, and server management.

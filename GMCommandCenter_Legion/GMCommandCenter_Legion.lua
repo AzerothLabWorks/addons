@@ -11,6 +11,7 @@ local state = {
     browserType = nil,
     mountPage = 1,
     mountRows = {},
+    browserResults = nil,
     commandDetailControls = {},
 }
 
@@ -60,6 +61,100 @@ end
 -- Collection API. Building this list at runtime avoids WotLK-only, obsolete,
 -- and test records that merely share the old heirloom item quality.
 local legionHeirloomItems
+
+local ITEM_QUALITY_NAMES = {
+    [0] = "Poor",
+    [1] = "Common",
+    [2] = "Uncommon",
+    [3] = "Rare",
+    [4] = "Epic",
+    [5] = "Legendary",
+    [6] = "Artifact",
+    [7] = "Heirloom",
+}
+
+local WEAPON_SUBTYPES = {
+    [0] = "One-Handed Axe",
+    [1] = "Two-Handed Axe",
+    [2] = "Bow",
+    [3] = "Gun",
+    [4] = "One-Handed Mace",
+    [5] = "Two-Handed Mace",
+    [6] = "Polearm",
+    [7] = "One-Handed Sword",
+    [8] = "Two-Handed Sword",
+    [9] = "Warglaive",
+    [10] = "Staff",
+    [11] = "One-Handed Exotic",
+    [12] = "Two-Handed Exotic",
+    [13] = "Fist Weapon",
+    [14] = "Miscellaneous",
+    [15] = "Dagger",
+    [16] = "Thrown",
+    [17] = "Spear",
+    [18] = "Crossbow",
+    [19] = "Wand",
+    [20] = "Fishing Pole",
+}
+
+local ARMOR_SUBTYPES = {
+    [0] = "Miscellaneous",
+    [1] = "Cloth",
+    [2] = "Leather",
+    [3] = "Mail",
+    [4] = "Plate",
+    [5] = "Cosmetic",
+    [6] = "Shield",
+    [7] = "Relic",
+}
+
+local INVENTORY_SLOTS = {
+    [1] = "Head",
+    [2] = "Neck",
+    [3] = "Shoulder",
+    [5] = "Chest",
+    [6] = "Waist",
+    [7] = "Legs",
+    [8] = "Feet",
+    [9] = "Wrist",
+    [10] = "Hands",
+    [11] = "Finger",
+    [12] = "Trinket",
+    [13] = "One-Hand",
+    [14] = "Shield",
+    [15] = "Ranged",
+    [16] = "Back",
+    [17] = "Two-Hand",
+    [20] = "Chest",
+    [21] = "Main Hand",
+    [22] = "Off Hand",
+    [23] = "Held In Off-hand",
+    [25] = "Thrown",
+    [26] = "Ranged",
+}
+
+local function IsEquipmentBrowser()
+    return state.browserType == "armor" or state.browserType == "weapons"
+end
+
+local function IsItemBrowser()
+    return state.browserType == "heirlooms" or IsEquipmentBrowser()
+end
+
+local function BrowserEntryID(entry)
+    return IsEquipmentBrowser() and entry[1] or entry.id
+end
+
+local function EquipmentSubtype(entry)
+    if entry[3] == 2 then
+        return WEAPON_SUBTYPES[entry[4]] or ("Weapon subclass " .. entry[4])
+    end
+    return ARMOR_SUBTYPES[entry[4]] or ("Armor subclass " .. entry[4])
+end
+
+local function EquipmentSlot(entry)
+    return INVENTORY_SLOTS[entry[5]] or ("Inventory type " .. entry[5])
+end
 
 local function GetLegionHeirloomItems()
     if legionHeirloomItems then
@@ -252,6 +347,7 @@ end
 local function HideMountRows()
     state.mountMode = false
     state.browserType = nil
+    state.browserResults = nil
     if LGMCC_MountStatus then
         LGMCC_MountStatus:Hide()
     end
@@ -277,9 +373,25 @@ local function SetCommandControlsShown(isShown)
 end
 
 local function MatchesBrowserEntry(entry)
+    if IsEquipmentBrowser() then
+        local expectedClass = state.browserType == "weapons" and 2 or 4
+        if entry[3] ~= expectedClass then
+            return false
+        end
+    end
+
     local needle = state.filter or ""
     if needle == "" then
         return true
+    end
+
+    if IsEquipmentBrowser() then
+        local quality = ITEM_QUALITY_NAMES[entry[8]] or ("Quality " .. entry[8])
+        local requiredLevel = entry[7] > 0 and entry[7] or "None"
+        local haystack = entry[1] .. " " .. entry[2] .. " " .. EquipmentSubtype(entry) .. " "
+            .. EquipmentSlot(entry) .. " " .. quality .. " item level " .. entry[6] .. " ilevel " .. entry[6]
+            .. " ilvl " .. entry[6] .. " required level " .. requiredLevel .. " req " .. requiredLevel
+        return WildcardMatch(haystack, needle)
     end
 
     local haystack = entry.id .. " " .. entry.name .. " "
@@ -292,11 +404,17 @@ end
 local function GetBrowserData()
     if state.browserType == "heirlooms" then
         return GetLegionHeirloomItems()
+    elseif IsEquipmentBrowser() then
+        return LGMCC_EQUIPMENT_CATALOG
     end
     return GetLegionMountSpells()
 end
 
 local function FilterBrowserEntries()
+    if state.browserResults then
+        return state.browserResults
+    end
+
     local results = {}
     local data = GetBrowserData()
     if not data then
@@ -308,6 +426,7 @@ local function FilterBrowserEntries()
             table.insert(results, entry)
         end
     end
+    state.browserResults = results
     return results
 end
 
@@ -316,6 +435,13 @@ local function FormatBrowserRow(entry)
         local collectionState = entry.collected and "Collected" or "Not collected"
         return entry.id .. " - " .. entry.name .. " | " .. entry.slot .. " | " .. entry.subtype
             .. " | " .. collectionState .. " | lvl " .. entry.minLevel .. "-" .. entry.maxLevel
+    end
+
+    if IsEquipmentBrowser() then
+        local requiredLevel = entry[7] > 0 and entry[7] or "None"
+        local quality = ITEM_QUALITY_NAMES[entry[8]] or ("Quality " .. entry[8])
+        return entry[1] .. " - " .. entry[2] .. " | " .. EquipmentSubtype(entry) .. " | "
+            .. EquipmentSlot(entry) .. " | iLvl " .. entry[6] .. " | Req " .. requiredLevel .. " | " .. quality
     end
 
     local classText = ""
@@ -331,8 +457,8 @@ local function ShowBrowserTooltip(owner, entry)
     end
 
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
-    if state.browserType == "heirlooms" then
-        GameTooltip:SetHyperlink("item:" .. entry.id .. ":0:0:0:0:0:0:0")
+    if IsItemBrowser() then
+        GameTooltip:SetHyperlink("item:" .. BrowserEntryID(entry) .. ":0:0:0:0:0:0:0")
     else
         GameTooltip:SetHyperlink("spell:" .. entry.id)
     end
@@ -350,6 +476,10 @@ local function RefreshMountRows()
     local noun = "mount spells"
     if state.browserType == "heirlooms" then
         noun = "heirloom items"
+    elseif state.browserType == "armor" then
+        noun = "armor items"
+    elseif state.browserType == "weapons" then
+        noun = "weapon items"
     end
     local maxPage = math.max(1, math.ceil(total / MOUNT_ROWS))
     if state.mountPage > maxPage then
@@ -366,6 +496,8 @@ local function RefreshMountRows()
         elseif not hasBrowserData then
             if state.browserType == "heirlooms" then
                 LGMCC_MountStatus:SetText("The Legion Heirloom Collection API is unavailable.")
+            elseif IsEquipmentBrowser() then
+                LGMCC_MountStatus:SetText("The build-26365 equipment catalog is unavailable.")
             else
                 LGMCC_MountStatus:SetText("The Legion Mount Journal API is unavailable.")
             end
@@ -394,22 +526,27 @@ local function RefreshMountRows()
         local entry = entries[startIndex + i - 1]
         if row and entry then
             row.entry = entry
-            row.action:SetText(state.browserType == "heirlooms" and "Add" or "Learn")
+            row.action:SetText(IsItemBrowser() and "Add" or "Learn")
             row.label:SetText(FormatBrowserRow(entry))
             row.label:ClearAllPoints()
-            if entry.icon and entry.icon ~= "" then
-                if type(entry.icon) == "number" then
-                    row.icon:SetTexture(entry.icon)
+            local icon = entry.icon
+            if IsEquipmentBrowser() and GetItemInfoInstant then
+                local _, _, _, _, instantIcon = GetItemInfoInstant(entry[1])
+                icon = instantIcon
+            end
+            if icon and icon ~= "" then
+                if type(icon) == "number" then
+                    row.icon:SetTexture(icon)
                 else
-                    row.icon:SetTexture("Interface\\Icons\\" .. entry.icon)
+                    row.icon:SetTexture("Interface\\Icons\\" .. icon)
                 end
                 row.icon:Show()
                 row.label:SetPoint("LEFT", row.icon, "RIGHT", 5, 0)
-                row.label:SetWidth(260)
+                row.label:SetWidth(400)
             else
                 row.icon:Hide()
                 row.label:SetPoint("LEFT", 0, 0)
-                row.label:SetWidth(285)
+                row.label:SetWidth(425)
             end
             row:Show()
         elseif row then
@@ -424,6 +561,7 @@ local function ShowMountBrowser()
     state.mountMode = true
     state.browserType = "mounts"
     state.mountPage = 1
+    state.browserResults = nil
     state.selected = nil
     state.filter = ""
     SetCommandControlsShown(false)
@@ -445,6 +583,7 @@ local function ShowHeirloomBrowser()
     state.mountMode = true
     state.browserType = "heirlooms"
     state.mountPage = 1
+    state.browserResults = nil
     state.selected = nil
     state.filter = ""
     SetCommandControlsShown(false)
@@ -456,6 +595,31 @@ local function ShowHeirloomBrowser()
     LGMCC_MetaText:SetText("Live 7.3.5 Heirloom Collection")
     LGMCC_SyntaxText:SetText(".additem <itemId> 1")
     LGMCC_HelpText:SetText("Browse the heirlooms defined by this Legion client. Search by name, item ID, slot, armor or weapon type, Collected, or Not collected, then click Add.")
+    SetEditBoxText(LGMCC_CommandBox, "")
+    SetEditBoxText(LGMCC_ArgsBox, "")
+    RefreshMountRows()
+end
+
+local function ShowEquipmentBrowser(browserType)
+    state.mountMode = true
+    state.browserType = browserType
+    state.mountPage = 1
+    state.browserResults = nil
+    state.selected = nil
+    state.filter = ""
+    SetCommandControlsShown(false)
+    if LGMCC_FilterBox and LGMCC_FilterBox:GetText() ~= "" then
+        LGMCC_FilterBox:SetText("")
+    end
+
+    local title = browserType == "weapons" and "Weapon Items" or "Armor Items"
+    local typeHelp = browserType == "weapons" and "weapon type" or "armor type"
+    LGMCC_TitleText:SetText(title)
+    LGMCC_MetaText:SetText("Build 7.3.5.26365 DB2 equipment catalog")
+    LGMCC_SyntaxText:SetText(".additem <itemId> 1")
+    LGMCC_HelpText:SetText("Browse the equipment defined by this exact Legion client build. Search by name, item ID, "
+        .. typeHelp .. ", slot, quality, item level (for example 'ilvl 910'), or required level (for example 'req 110'). "
+        .. "Hover for complete stats and requirements, then click Add.")
     SetEditBoxText(LGMCC_CommandBox, "")
     SetEditBoxText(LGMCC_ArgsBox, "")
     RefreshMountRows()
@@ -548,6 +712,7 @@ local function BuildCommandsPanel(parent)
     LGMCC_FilterBox:SetPoint("TOPLEFT", 2, -2)
     LGMCC_FilterBox:SetScript("OnTextChanged", function(self)
         state.filter = self:GetText() or ""
+        state.browserResults = nil
         ResetCommandScroll()
         RefreshCommandRows()
         state.mountPage = 1
@@ -559,7 +724,7 @@ local function BuildCommandsPanel(parent)
 
     local lastButton
     for i, cat in ipairs(categories) do
-        local button = CreateButton(panel, "LGMCC_Cat" .. i, cat, 70, 22)
+        local button = CreateButton(panel, "LGMCC_Cat" .. i, cat, 66, 22)
         if i == 1 then
             button:SetPoint("TOPLEFT", 2, -32)
         elseif i == 6 then
@@ -577,19 +742,33 @@ local function BuildCommandsPanel(parent)
         lastButton = button
 
         if cat == "Spells" then
-            local mountButton = CreateButton(panel, nil, "Mount", 70, 22)
+            local mountButton = CreateButton(panel, nil, "Mount", 62, 22)
             mountButton:SetPoint("LEFT", lastButton, "RIGHT", 4, 0)
             mountButton:SetScript("OnClick", function()
                 ShowMountBrowser()
             end)
             lastButton = mountButton
         elseif cat == "Items" then
-            local heirloomButton = CreateButton(panel, nil, "Heirloom", 78, 22)
+            local heirloomButton = CreateButton(panel, nil, "Heirloom", 70, 22)
             heirloomButton:SetPoint("LEFT", lastButton, "RIGHT", 4, 0)
             heirloomButton:SetScript("OnClick", function()
                 ShowHeirloomBrowser()
             end)
             lastButton = heirloomButton
+
+            local armorButton = CreateButton(panel, nil, "Armor", 58, 22)
+            armorButton:SetPoint("LEFT", lastButton, "RIGHT", 4, 0)
+            armorButton:SetScript("OnClick", function()
+                ShowEquipmentBrowser("armor")
+            end)
+            lastButton = armorButton
+
+            local weaponsButton = CreateButton(panel, nil, "Weapons", 62, 22)
+            weaponsButton:SetPoint("LEFT", lastButton, "RIGHT", 4, 0)
+            weaponsButton:SetScript("OnClick", function()
+                ShowEquipmentBrowser("weapons")
+            end)
+            lastButton = weaponsButton
         end
     end
 
@@ -639,11 +818,11 @@ local function BuildCommandsPanel(parent)
     LGMCC_MetaText:SetPoint("TOPLEFT", LGMCC_TitleText, "BOTTOMLEFT", 0, -4)
     LGMCC_SyntaxText = CreateLabel(panel, "LGMCC_SyntaxText", "", "small")
     LGMCC_SyntaxText:SetPoint("TOPLEFT", LGMCC_MetaText, "BOTTOMLEFT", 0, -12)
-    LGMCC_SyntaxText:SetWidth(360)
+    LGMCC_SyntaxText:SetWidth(500)
     LGMCC_SyntaxText:SetTextColor(1.0, 0.82, 0.0)
     LGMCC_HelpText = CreateLabel(panel, "LGMCC_HelpText", "", "small")
     LGMCC_HelpText:SetPoint("TOPLEFT", LGMCC_SyntaxText, "BOTTOMLEFT", 0, -12)
-    LGMCC_HelpText:SetWidth(360)
+    LGMCC_HelpText:SetWidth(500)
     LGMCC_HelpText:SetHeight(82)
 
     local argsLabel = CreateLabel(panel, nil, "Arguments", "small")
@@ -693,7 +872,7 @@ local function BuildCommandsPanel(parent)
 
     LGMCC_MountStatus = CreateLabel(panel, "LGMCC_MountStatus", "", "small")
     LGMCC_MountStatus:SetPoint("TOPLEFT", 282, -222)
-    LGMCC_MountStatus:SetWidth(225)
+    LGMCC_MountStatus:SetWidth(330)
     LGMCC_MountStatus:Hide()
 
     LGMCC_MountPrev = CreateButton(panel, "LGMCC_MountPrev", "Prev", 54, 22)
@@ -714,7 +893,7 @@ local function BuildCommandsPanel(parent)
 
     for i = 1, MOUNT_ROWS do
         local row = CreateFrame("Frame", "LGMCC_MountRow" .. i, panel)
-        row:SetWidth(360)
+        row:SetWidth(500)
         row:SetHeight(24)
         row:EnableMouse(true)
         if i == 1 then
@@ -725,7 +904,7 @@ local function BuildCommandsPanel(parent)
 
         row.label = CreateLabel(row, nil, "", "small")
         row.label:SetPoint("LEFT", 0, 0)
-        row.label:SetWidth(285)
+        row.label:SetWidth(425)
 
         row.icon = row:CreateTexture(nil, "ARTWORK")
         row.icon:SetWidth(20)
@@ -737,8 +916,8 @@ local function BuildCommandsPanel(parent)
         row.action:SetPoint("RIGHT", 0, 0)
         row.action:SetScript("OnClick", function(self)
             local parent = self:GetParent()
-            if parent.entry and state.browserType == "heirlooms" then
-                RunCommand(".additem " .. parent.entry.id .. " 1")
+            if parent.entry and IsItemBrowser() then
+                RunCommand(".additem " .. BrowserEntryID(parent.entry) .. " 1")
             elseif parent.entry then
                 RunCommand(".learn " .. parent.entry.id)
             end
@@ -759,7 +938,7 @@ end
 
 local function BuildFrame()
     local frame = CreateFrame("Frame", "GMCommandCenter_LegionFrame", UIParent)
-    frame:SetWidth(680)
+    frame:SetWidth(820)
     frame:SetHeight(540)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
