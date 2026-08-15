@@ -57,6 +57,9 @@ Select **Items**, then click **Armor** or **Weapons**. These browsers use the
 - Filter armor by material (Cloth, Leather, Mail, Plate, Shields, Cosmetic, or
   Miscellaneous) and weapons by family (Axes, Maces, Swords, Daggers, Staves,
   Warglaives, ranged families, and more).
+- Filter directly by item quality from Poor through Heirloom.
+- Use the dedicated equipment-filter toolbar and quality-colored item names;
+  the enlarged browser shows ten equipment results per page.
 - Search by slot or subtype, such as `Head`, `Plate`, `Dagger`, or `Two-Hand`.
 - Search by quality, such as `Epic`, `Legendary`, or `Artifact`.
 - Search item level with terms such as `ilvl 910`.

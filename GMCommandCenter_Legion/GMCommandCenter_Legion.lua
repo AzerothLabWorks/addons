@@ -1,6 +1,6 @@
 local ADDON = "GMCommandCenter_Legion"
-local ROWS = 13
-local MOUNT_ROWS = 8
+local ROWS = 17
+local MOUNT_ROWS = 10
 local state = {
     selected = nil,
     filter = "",
@@ -15,6 +15,7 @@ local state = {
     filterSerial = 0,
     equipmentLevelFilter = "any",
     equipmentTypeFilter = "all",
+    equipmentQualityFilter = "any",
     equipmentFilterControls = {},
     commandDetailControls = {},
 }
@@ -75,6 +76,18 @@ local ITEM_QUALITY_NAMES = {
     [5] = "Legendary",
     [6] = "Artifact",
     [7] = "Heirloom",
+}
+
+local QUALITY_FILTER_OPTIONS = {
+    { key = "any", label = "Any Quality" },
+    { key = 0, label = "Poor" },
+    { key = 1, label = "Common" },
+    { key = 2, label = "Uncommon" },
+    { key = 3, label = "Rare" },
+    { key = 4, label = "Epic" },
+    { key = 5, label = "Legendary" },
+    { key = 6, label = "Artifact" },
+    { key = 7, label = "Heirloom" },
 }
 
 local WEAPON_SUBTYPES = {
@@ -259,6 +272,10 @@ local function EquipmentTypeMatches(subclassID)
 
     local subclasses = WEAPON_FILTER_SUBCLASSES[filter]
     return subclasses and subclasses[subclassID] or false
+end
+
+local function EquipmentQualityMatches(qualityID)
+    return state.equipmentQualityFilter == "any" or qualityID == state.equipmentQualityFilter
 end
 
 local function GetLegionHeirloomItems()
@@ -459,7 +476,7 @@ local function FindFilterLabel(options, key, fallback)
 end
 
 local function UpdateEquipmentFilterText()
-    if not LGMCC_LevelFilter or not LGMCC_TypeFilter then
+    if not LGMCC_LevelFilter or not LGMCC_TypeFilter or not LGMCC_QualityFilter then
         return
     end
 
@@ -472,6 +489,8 @@ local function UpdateEquipmentFilterText()
         state.browserType == "weapons" and "All Weapons" or "All Armor")
     UIDropDownMenu_SetText(LGMCC_LevelFilter, "Level: " .. levelLabel)
     UIDropDownMenu_SetText(LGMCC_TypeFilter, "Type: " .. typeLabel)
+    UIDropDownMenu_SetText(LGMCC_QualityFilter,
+        "Quality: " .. FindFilterLabel(QUALITY_FILTER_OPTIONS, state.equipmentQualityFilter, "Any Quality"))
 end
 
 local function SetEquipmentFiltersShown(isShown)
@@ -518,7 +537,8 @@ local function MatchesBrowserEntry(entry)
 
     if IsEquipmentBrowser() then
         local id, name, subclassID, inventoryType, itemLevel, requiredLevel, qualityID = DecodeEquipmentEntry(entry)
-        if not RequiredLevelMatches(requiredLevel) or not EquipmentTypeMatches(subclassID) then
+        if not RequiredLevelMatches(requiredLevel) or not EquipmentTypeMatches(subclassID)
+            or not EquipmentQualityMatches(qualityID) then
             return false
         elseif needle == "" then
             return true
@@ -582,6 +602,17 @@ local function FilterBrowserEntries()
     return results
 end
 
+local function ColorizeItemName(name, qualityID)
+    local color = ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[qualityID]
+    if color and color.hex then
+        if string.sub(color.hex, 1, 2) == "|c" then
+            return color.hex .. name .. "|r"
+        end
+        return "|c" .. color.hex .. name .. "|r"
+    end
+    return name
+end
+
 local function FormatBrowserRow(entry)
     if state.browserType == "heirlooms" then
         local collectionState = entry.collected and "Collected" or "Not collected"
@@ -593,7 +624,7 @@ local function FormatBrowserRow(entry)
         local id, name, subclassID, inventoryType, itemLevel, requiredLevel, qualityID = DecodeEquipmentEntry(entry)
         requiredLevel = requiredLevel > 0 and requiredLevel or "None"
         local quality = ITEM_QUALITY_NAMES[qualityID] or ("Quality " .. qualityID)
-        return id .. " - " .. name .. " | " .. EquipmentSubtype(subclassID) .. " | "
+        return id .. " - " .. ColorizeItemName(name, qualityID) .. " | " .. EquipmentSubtype(subclassID) .. " | "
             .. EquipmentSlot(inventoryType) .. " | iLvl " .. itemLevel .. " | Req " .. requiredLevel .. " | " .. quality
     end
 
@@ -645,7 +676,8 @@ local function RefreshMountRows()
     local endIndex = math.min(startIndex + MOUNT_ROWS - 1, total)
     if LGMCC_MountStatus then
         if total > 0 then
-            LGMCC_MountStatus:SetText("Showing " .. startIndex .. "-" .. endIndex .. " of " .. total .. " " .. noun .. ".")
+            LGMCC_MountStatus:SetText("Page " .. state.mountPage .. " of " .. maxPage .. "  |  Showing "
+                .. startIndex .. "-" .. endIndex .. " of " .. total .. " " .. noun .. ".")
         elseif not hasBrowserData then
             if state.browserType == "heirlooms" then
                 LGMCC_MountStatus:SetText("The Legion Heirloom Collection API is unavailable.")
@@ -681,6 +713,7 @@ local function RefreshMountRows()
             row.entry = entry
             row.action:SetText(IsItemBrowser() and "Add" or "Learn")
             row.label:SetText(FormatBrowserRow(entry))
+            row.label:SetFontObject(IsEquipmentBrowser() and GameFontHighlight or GameFontHighlightSmall)
             row.label:ClearAllPoints()
             local icon = IsEquipmentBrowser() and nil or entry.icon
             if IsEquipmentBrowser() and GetItemInfoInstant then
@@ -695,11 +728,11 @@ local function RefreshMountRows()
                 end
                 row.icon:Show()
                 row.label:SetPoint("LEFT", row.icon, "RIGHT", 5, 0)
-                row.label:SetWidth(400)
+                row.label:SetWidth(545)
             else
                 row.icon:Hide()
                 row.label:SetPoint("LEFT", 0, 0)
-                row.label:SetWidth(425)
+                row.label:SetWidth(575)
             end
             row:Show()
         elseif row then
@@ -950,7 +983,7 @@ local function BuildCommandsPanel(parent)
     local listFrame = CreateFrame("Frame", nil, panel)
     listFrame:SetPoint("TOPLEFT", 0, -90)
     listFrame:SetWidth(250)
-    listFrame:SetHeight(315)
+    listFrame:SetHeight(411)
 
     LGMCC_CommandScroll = CreateFrame("ScrollFrame", "LGMCC_CommandScroll", listFrame, "FauxScrollFrameTemplate")
     LGMCC_CommandScroll:SetPoint("TOPLEFT", 0, -2)
@@ -993,11 +1026,11 @@ local function BuildCommandsPanel(parent)
     LGMCC_MetaText:SetPoint("TOPLEFT", LGMCC_TitleText, "BOTTOMLEFT", 0, -4)
     LGMCC_SyntaxText = CreateLabel(panel, "LGMCC_SyntaxText", "", "small")
     LGMCC_SyntaxText:SetPoint("TOPLEFT", LGMCC_MetaText, "BOTTOMLEFT", 0, -12)
-    LGMCC_SyntaxText:SetWidth(500)
+    LGMCC_SyntaxText:SetWidth(650)
     LGMCC_SyntaxText:SetTextColor(1.0, 0.82, 0.0)
     LGMCC_HelpText = CreateLabel(panel, "LGMCC_HelpText", "", "small")
     LGMCC_HelpText:SetPoint("TOPLEFT", LGMCC_SyntaxText, "BOTTOMLEFT", 0, -12)
-    LGMCC_HelpText:SetWidth(500)
+    LGMCC_HelpText:SetWidth(650)
     LGMCC_HelpText:SetHeight(82)
 
     local argsLabel = CreateLabel(panel, nil, "Arguments", "small")
@@ -1053,8 +1086,22 @@ local function BuildCommandsPanel(parent)
         RefreshMountRows()
     end
 
+    local equipmentFilterBar = CreateFrame("Frame", nil, panel)
+    equipmentFilterBar:SetPoint("TOPLEFT", 282, -240)
+    equipmentFilterBar:SetWidth(650)
+    equipmentFilterBar:SetHeight(46)
+    equipmentFilterBar:SetBackdrop({
+        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 16,
+        edgeSize = 10,
+        insets = { left = 3, right = 3, top = 3, bottom = 3 }
+    })
+    equipmentFilterBar:SetBackdropColor(0.04, 0.04, 0.04, 0.88)
+
     LGMCC_LevelFilter = CreateFrame("Frame", "LGMCC_LevelFilter", panel, "UIDropDownMenuTemplate")
-    LGMCC_LevelFilter:SetPoint("TOPLEFT", 262, -184)
+    LGMCC_LevelFilter:SetPoint("TOPLEFT", 264, -246)
     UIDropDownMenu_SetWidth(LGMCC_LevelFilter, 145)
     UIDropDownMenu_JustifyText(LGMCC_LevelFilter, "LEFT")
     UIDropDownMenu_Initialize(LGMCC_LevelFilter, function(_, level)
@@ -1075,7 +1122,7 @@ local function BuildCommandsPanel(parent)
     end)
 
     LGMCC_TypeFilter = CreateFrame("Frame", "LGMCC_TypeFilter", panel, "UIDropDownMenuTemplate")
-    LGMCC_TypeFilter:SetPoint("TOPLEFT", 432, -184)
+    LGMCC_TypeFilter:SetPoint("TOPLEFT", 438, -246)
     UIDropDownMenu_SetWidth(LGMCC_TypeFilter, 145)
     UIDropDownMenu_JustifyText(LGMCC_TypeFilter, "LEFT")
     UIDropDownMenu_Initialize(LGMCC_TypeFilter, function(_, level)
@@ -1093,22 +1140,43 @@ local function BuildCommandsPanel(parent)
         end
     end)
 
+    LGMCC_QualityFilter = CreateFrame("Frame", "LGMCC_QualityFilter", panel, "UIDropDownMenuTemplate")
+    LGMCC_QualityFilter:SetPoint("TOPLEFT", 612, -246)
+    UIDropDownMenu_SetWidth(LGMCC_QualityFilter, 145)
+    UIDropDownMenu_JustifyText(LGMCC_QualityFilter, "LEFT")
+    UIDropDownMenu_Initialize(LGMCC_QualityFilter, function(_, level)
+        for _, option in ipairs(QUALITY_FILTER_OPTIONS) do
+            local optionKey = option.key
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = option.label
+            info.checked = state.equipmentQualityFilter == optionKey
+            info.func = function()
+                state.equipmentQualityFilter = optionKey
+                ApplyEquipmentFilter()
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+
     local resetEquipmentFilters = CreateButton(panel, nil, "Reset", 58, 22)
-    resetEquipmentFilters:SetPoint("TOPLEFT", 690, -190)
+    resetEquipmentFilters:SetPoint("TOPLEFT", 850, -252)
     resetEquipmentFilters:SetScript("OnClick", function()
         state.equipmentLevelFilter = "any"
         state.equipmentTypeFilter = "all"
+        state.equipmentQualityFilter = "any"
         ApplyEquipmentFilter()
     end)
 
+    table.insert(state.equipmentFilterControls, equipmentFilterBar)
     table.insert(state.equipmentFilterControls, LGMCC_LevelFilter)
     table.insert(state.equipmentFilterControls, LGMCC_TypeFilter)
+    table.insert(state.equipmentFilterControls, LGMCC_QualityFilter)
     table.insert(state.equipmentFilterControls, resetEquipmentFilters)
     SetEquipmentFiltersShown(false)
 
     LGMCC_MountStatus = CreateLabel(panel, "LGMCC_MountStatus", "", "small")
-    LGMCC_MountStatus:SetPoint("TOPLEFT", 282, -226)
-    LGMCC_MountStatus:SetWidth(330)
+    LGMCC_MountStatus:SetPoint("TOPLEFT", 282, -296)
+    LGMCC_MountStatus:SetWidth(460)
     LGMCC_MountStatus:Hide()
 
     LGMCC_MountPrev = CreateButton(panel, "LGMCC_MountPrev", "Prev", 54, 22)
@@ -1129,8 +1197,8 @@ local function BuildCommandsPanel(parent)
 
     for i = 1, MOUNT_ROWS do
         local row = CreateFrame("Frame", "LGMCC_MountRow" .. i, panel)
-        row:SetWidth(500)
-        row:SetHeight(24)
+        row:SetWidth(650)
+        row:SetHeight(26)
         row:EnableMouse(true)
         if i == 1 then
             row:SetPoint("TOPLEFT", LGMCC_MountStatus, "BOTTOMLEFT", 0, -8)
@@ -1140,15 +1208,15 @@ local function BuildCommandsPanel(parent)
 
         row.label = CreateLabel(row, nil, "", "small")
         row.label:SetPoint("LEFT", 0, 0)
-        row.label:SetWidth(425)
+        row.label:SetWidth(575)
 
         row.icon = row:CreateTexture(nil, "ARTWORK")
-        row.icon:SetWidth(20)
-        row.icon:SetHeight(20)
+        row.icon:SetWidth(24)
+        row.icon:SetHeight(24)
         row.icon:SetPoint("LEFT", 0, 0)
         row.icon:Hide()
 
-        row.action = CreateButton(row, nil, "Learn", 62, 22)
+        row.action = CreateButton(row, nil, "Learn", 62, 24)
         row.action:SetPoint("RIGHT", 0, 0)
         row.action:SetScript("OnClick", function(self)
             local parent = self:GetParent()
@@ -1174,11 +1242,12 @@ end
 
 local function BuildFrame()
     local frame = CreateFrame("Frame", "GMCommandCenter_LegionFrame", UIParent)
-    frame:SetWidth(820)
-    frame:SetHeight(540)
+    frame:SetWidth(980)
+    frame:SetHeight(700)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
     frame:EnableMouse(true)
+    frame:SetClampedToScreen(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetScript("OnDragStart", frame.StartMoving)
     frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
