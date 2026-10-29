@@ -1,0 +1,10 @@
+## Interface: 30300
+## Title: GM Command Center - CoA
+## Notes: Target-safe CoA convenience tools, item lookup, travel, and playerbot shortcuts.
+## Author: AzerothLabWorks
+## Version: 0.2.0-coa
+## SavedVariables: CoAGMCCDB
+
+Data.lua
+Core.lua
+UI.lua

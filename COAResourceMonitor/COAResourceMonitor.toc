@@ -1,0 +1,8 @@
+## Interface: 30300
+## Title: COA Resource Monitor
+## Notes: Displays simultaneous Health, Mana, Rage, and Energy for Ascension custom classes.
+## Author: AzerothLabWorks
+## Version: 1.0.0
+## SavedVariables: COAResourceMonitorDB
+
+COAResourceMonitor.lua

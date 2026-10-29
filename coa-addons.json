@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "release_id": "g1-20261029",
+  "compatibility": "AzerothLabWorks CoA G1 profile; other clients are unverified",
+  "addons": [
+    {"id": "GMCommandCenter_CoA", "version": "0.2.0-coa", "interface": 30300, "requires_server": "CoA command profile; playerbot buttons need g1-20261029", "files": ["COPYING", "Core.lua", "Data.lua", "GMCommandCenter_CoA.toc", "README.md", "UI.lua"]},
+    {"id": "CoAGatheringAlerts", "version": "1.0.0", "interface": 30300, "requires_server": "g1-20261029: COAGATHER protocol 1", "files": ["COPYING", "CoAGatheringAlerts.lua", "CoAGatheringAlerts.toc", "Core.lua", "README.md"]},
+    {"id": "CoALfgTracker", "version": "1.0.0", "interface": 30300, "requires_server": "g1-20261029: COA_LFG_STATUS protocol 1 and matching encounter catalog", "files": ["COPYING", "CoALfgTracker.lua", "CoALfgTracker.toc", "CoALfgTrackerData.lua", "README.md"]},
+    {"id": "COAResourceMonitor", "version": "1.0.0", "interface": 30300, "requires_server": null, "files": ["COPYING", "COAResourceMonitor.lua", "COAResourceMonitor.toc", "README.md"]}
+  ]
+}

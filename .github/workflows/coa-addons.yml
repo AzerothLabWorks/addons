@@ -1,0 +1,25 @@
+name: CoA addons
+on:
+  push:
+    paths: ['*CoA*/**', 'COAResourceMonitor/**', 'tools/coa-*/**', 'scripts/**', 'coa-addons.json', '.github/workflows/coa-addons.yml']
+  pull_request:
+    paths: ['*CoA*/**', 'COAResourceMonitor/**', 'tools/coa-*/**', 'scripts/**', 'coa-addons.json', '.github/workflows/coa-addons.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r tools/coa-release/requirements.txt
+      - run: python tools/coa-release/test.py
+      - run: pwsh tools/coa-release/test-installer.ps1
+      - run: python tools/coa-release/package.py --output dist/coa-g1-20261029
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coa-g1-20261029
+          path: dist/coa-g1-20261029/

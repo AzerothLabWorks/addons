@@ -1,0 +1,14 @@
+/GMCommandCenter_CoA/** text eol=lf
+/CoAGatheringAlerts/** text eol=lf
+/CoALfgTracker/** text eol=lf
+/COAResourceMonitor/** text eol=lf
+/tools/coa-*/** text eol=lf
+/scripts/Install-CoAAddons.ps1 text eol=lf
+/.github/workflows/coa-addons.yml text eol=lf
+/coa-addons.json text eol=lf
+/README.md text eol=lf
+/PROVENANCE.md text eol=lf
+/NOTICE-CoA.md text eol=lf
+/COPYING-CoA text eol=lf
+/.gitattributes text eol=lf
+/.gitignore text eol=lf

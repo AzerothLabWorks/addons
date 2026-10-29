@@ -1,0 +1,6 @@
+## Interface: 30300
+## Title: CoA LFG Tracker
+## Notes: Server-authoritative normal and heroic dungeon objectives.
+## Version: 1.0.0
+CoALfgTrackerData.lua
+CoALfgTracker.lua
