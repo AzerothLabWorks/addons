@@ -58,6 +58,11 @@ try {
     Assert (-not (Test-Path -LiteralPath (Join-Path $addons 'CoAGatheringAlerts'))) 'New addon not rolled back.'
     Assert ((Get-Content -LiteralPath (Join-Path $client 'WTF\untouched.txt') -Raw) -ceq 'saved settings') 'WTF changed.'
     Assert ((Get-Content -LiteralPath (Join-Path $addons 'OtherAddon\keep.lua') -Raw) -ceq 'other addon') 'Other addon changed.'
+    & $installer -ClientPath $client -PackageDirectory $packages -Addons 'CoAGatheringAlerts,COAResourceMonitor' -Action Install | Out-Null
+    $selectiveReceipt = @(Get-ChildItem -LiteralPath (Join-Path $testRoot 'CoAAddonBackups') -Recurse -Filter installed.json | Where-Object FullName -ne $receiptPath)[0].FullName
+    $selected = Get-Content -LiteralPath $selectiveReceipt -Raw | ConvertFrom-Json -AsHashtable
+    Assert ($selected.addons.Count -eq 2 -and -not (Test-Path -LiteralPath (Join-Path $addons 'GMCommandCenter_CoA'))) 'Comma-separated selection installed unintended addons.'
+    & $installer -ClientPath $client -Action Rollback -ReceiptPath $selectiveReceipt | Out-Null
     $release = Get-Content -LiteralPath (Join-Path $packages 'release.json') -Raw | ConvertFrom-Json -AsHashtable
     $archive = Join-Path $packages $release.packages[0].archive
     $archiveBytes = [IO.File]::ReadAllBytes($archive)
@@ -75,7 +80,7 @@ try {
     [IO.File]::WriteAllText((Join-Path $packages 'release.json'),($release | ConvertTo-Json -Depth 12))
     Fails { & $installer -ClientPath $client -PackageDirectory $packages -Action Install } 'unsafe archive path'
     Assert (-not (Test-Path -LiteralPath (Join-Path $client 'escape.lua'))) 'Archive traversal escaped into client.'
-    Write-Output 'INSTALLER TESTS PASSED: preview, WhatIf, running-client refusal, four-addon install, integrity, changed-file refusal, rollback, preservation, tamper rejection and traversal rejection. Disposable fixtures only.'
+    Write-Output 'INSTALLER TESTS PASSED: preview, WhatIf, running-client refusal, four-addon and selective install, integrity, changed-file refusal, rollback, preservation, tamper rejection and traversal rejection. Disposable fixtures only.'
 } finally {
     $resolved = [IO.Path]::GetFullPath($testRoot)
     Assert ($resolved.StartsWith($tempBase,[StringComparison]::OrdinalIgnoreCase) -and (Split-Path -Leaf $resolved) -match '^coa-addon-test-[a-f0-9]{32}$') 'Cleanup path escaped the disposable test directory.'

@@ -10,6 +10,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $Known = @('GMCommandCenter_CoA','CoAGatheringAlerts','CoALfgTracker','COAResourceMonitor')
+$Addons = @($Addons | ForEach-Object { $_.Split(',') | ForEach-Object { $_.Trim() } })
 
 function Require([bool]$Value,[string]$Message) { if (-not $Value) { throw $Message } }
 function Plain([string]$Path) {
