@@ -73,7 +73,7 @@ DBC validation for the LFG catalog is documented separately; game data is not co
 - Keep environmental patches and third-party addon downloads optional, credited and independently versioned.
 - Keep WotLK/Legion improvements on their own reviewed release tracks; they are unchanged by this CoA import.
 
-The [full server/gameplay roadmap](https://github.com/AzerothLabWorks/coa-local-server/blob/main/docs/gameplay-roadmap.md)
+The [full server/gameplay roadmap](https://github.com/AzerothLabWorks/coa-local-server/blob/main/docs/roadmap.md)
 tracks the wider project. Broad gameplay feature expansion is paused in favor of regular reviewed
 upstream updates, playerbot improvements and dungeon acceptance. Conversational LLM bots remain
 backlog work. Bot population increases are separate measured changes, never part of an addon or
