@@ -19,6 +19,10 @@ TOC alone is not evidence of stock WotLK compatibility.
 
 ## Install CoA addons
 
+Download the [G1 addon release](https://github.com/AzerothLabWorks/addons/releases/tag/g1-20261029) for
+ready-made ZIPs, `release.json` and `SHA256SUMS`. Keep all four ZIPs and `release.json` together when using
+the verified installer below. The installer script is included in the tagged source download.
+
 With the game closed, copy the selected addon folders into your existing client's
 `Interface/AddOns` folder. The TOC must be immediately inside each addon folder; avoid an extra
 `addons-main` or version-directory layer. Restart the client and enable the addon at character
@@ -67,7 +71,7 @@ DBC validation for the LFG catalog is documented separately; game data is not co
 
 - First community acceptance: install on a fresh local CoA server/client from the matching source profile.
 - Validate realm opt-in, target-safe GM commands, resource formatting, tracker completion and gathering sound/alignment.
-- Publish versioned ZIP assets and checksums after fresh-install acceptance.
+- Maintain versioned ZIP assets and checksums with the matching server release.
 - Add a capability/status display for missing or mismatched server components.
 - Consider configurable gathering sound, cooldown and visual styling after real-world feedback.
 - Keep environmental patches and third-party addon downloads optional, credited and independently versioned.
