@@ -12,6 +12,7 @@ This grant covers these new directories and release files:
 - `GMCommandCenter_CoA/`, `CoAGatheringAlerts/`, `CoALfgTracker/`, `COAResourceMonitor/`
 - `scripts/Install-CoAAddons.ps1`, `tools/coa-addon-tests/`, `tools/coa-gathering-tests/`, `tools/coa-release/`
 - The CoA release manifest, documentation and CoA CI workflow.
+- Authored source-packaging tooling under `tools/weakauras-coa/` and its source-lock metadata under `third-party/`.
 
 It does **not** change the license of the pre-existing `GMCommandCenter/`,
 `GMCommandCenter_Legion/` or `tools/legion-*` content. Their missing or inherited licensing
@@ -22,3 +23,10 @@ notice does not claim ownership of game names, underlying client data, or third-
 No game executable, DBC, MPQ, texture or sound file is included. References to textures and the
 MapPing sound use resources already present in the user's compatible client. Test dependencies
 such as Lupa are installed separately and keep their own licenses.
+
+The separate WeakAuras compatibility distribution is not covered by a blanket AzerothLabWorks license.
+Its third-party Lua source, libraries, fonts and sounds retain the licenses and attribution from the pinned
+Ascension WeakAuras source. Compatibility patches to that source retain the target component's license.
+The builder preserves their notices. The preceding no-texture/no-sound statement
+describes the four authored CoA addon ZIPs; the separate WeakAuras ZIP includes upstream addon media under
+its own terms. See `docs/weakauras-coa.md`.

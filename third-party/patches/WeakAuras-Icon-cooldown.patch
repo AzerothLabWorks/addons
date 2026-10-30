@@ -1,0 +1,12 @@
+--- a/WeakAuras/RegionTypes/Icon.lua
++++ b/WeakAuras/RegionTypes/Icon.lua
+@@ -637,7 +637,8 @@
+     end
+ 
+     function region:PreShow()
+-      if (cooldown.duration and cooldown.duration > 0.01 and cooldown.duration ~= math.huge and cooldown.expirationTime ~= math.huge) then
++      -- AzerothLabWorks, 2026-10-30: skip cooldown arithmetic until expirationTime exists.
++      if (cooldown.duration and cooldown.expirationTime and cooldown.duration > 0.01 and cooldown.duration ~= math.huge and cooldown.expirationTime ~= math.huge) then
+         cooldown:Show();
+         cooldown:SetCooldown(cooldown.expirationTime - cooldown.duration, cooldown.duration);
+         cooldown:Resume()

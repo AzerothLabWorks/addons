@@ -1,0 +1,34 @@
+name: CoA WeakAuras packaging
+on:
+  push:
+    paths: ['tools/weakauras-coa/**', 'third-party/**', '.github/workflows/weakauras-coa.yml']
+  pull_request:
+    paths: ['tools/weakauras-coa/**', 'third-party/**', '.github/workflows/weakauras-coa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch the pinned public source
+        shell: bash
+        run: |
+          git init "$RUNNER_TEMP/weakauras-source"
+          git -C "$RUNNER_TEMP/weakauras-source" remote add origin https://github.com/Thinato/WeakAuras-Ascension.git
+          git -C "$RUNNER_TEMP/weakauras-source" fetch --depth 1 origin 5741c0cd6ee021a954b83ea6c69edf8bd0bba196
+          git -C "$RUNNER_TEMP/weakauras-source" checkout --detach 5741c0cd6ee021a954b83ea6c69edf8bd0bba196
+      - name: Test the source package
+        run: python tools/weakauras-coa/test_build.py --source "$RUNNER_TEMP/weakauras-source"
+      - name: Build the separate addon archive
+        run: |
+          mkdir -p dist
+          python tools/weakauras-coa/build.py --source "$RUNNER_TEMP/weakauras-source" --output dist/weakauras-coa-5.21.2-alw.1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: weakauras-coa-5.21.2-alw.1
+          path: dist/weakauras-coa-5.21.2-alw.1/

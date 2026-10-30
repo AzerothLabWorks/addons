@@ -18,3 +18,19 @@ or third-party assets, and does not add a blanket license over them. Their licen
 review before any combined release that includes them.
 No client executables, MPQs, screenshots, DBC files, saved variables or third-party addon binaries
 are included. The package hashes provide integrity checks, not an independent publisher signature.
+
+## Separate WeakAuras compatibility package
+
+The later `weakauras-coa-5.21.2-alw.1` release is built from the public Ascension WeakAuras source pinned
+in [`third-party/weakauras-coa.json`](third-party/weakauras-coa.json). It is not part of the four-addon
+`g1-20261029` manifest and does not change that release's files or hashes.
+
+The six addon directories originate from the WeakAuras team and Ascension contributors, preserved in
+the pinned public fork. The package adds the reviewed missing-expiration-time guard in `RegionTypes/Icon.lua`;
+it does not copy a personal client, SavedVariables or aura definitions. The standard `Prototypes.lua` range
+wrapper remains intact. CoA spell discovery is supplied by the separate server-repository client repair.
+
+The build reads the pinned Git tree, including license files omitted by upstream archive-export rules.
+The WeakAuras code, bundled libraries, fonts and sounds retain their respective notices and terms. In
+particular, a GPL notice for the addon code does not relicense all included media. See the
+[WeakAuras guide](docs/weakauras-coa.md) and generated package provenance for details.
