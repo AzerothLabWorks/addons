@@ -15,5 +15,5 @@
 /docs/** text eol=lf
 /tools/weakauras-coa/** text eol=lf
 /third-party/*.json text eol=lf
-/third-party/patches/*.patch -text
+/third-party/patches/*.patch -text -whitespace
 /.github/workflows/weakauras-coa.yml text eol=lf
