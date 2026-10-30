@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "package": "WeakAuras-CoA-5.21.2-alw.1.zip",
+  "version": "5.21.2-alw.1",
+  "audit_date": "2026-10-30",
+  "compatibility": "Ascension CoA 3.3.5 client, interface 30300; G1-compatible source family. Retail, Wrath Classic and arbitrary 3.3.5 clients are unverified.",
+  "upstream": {
+    "repository": "https://github.com/Thinato/WeakAuras-Ascension",
+    "clone_url": "https://github.com/Thinato/WeakAuras-Ascension.git",
+    "commit": "5741c0cd6ee021a954b83ea6c69edf8bd0bba196",
+    "tree": "2a51b49cc2cad6c9a6d8f19906a77f0254b55737",
+    "commit_date": "2026-02-17T12:58:11Z",
+    "role": "Preserved public mirror of the Ascension backport; not asserted to be an official current release",
+    "original_project_url": "https://github.com/Ascension-Addons/WeakAuras-Ascension",
+    "original_project_status_at_audit": "404 from GitHub API; preserved README links to that project and directs installation through Ascension Launcher",
+    "second_matching_mirror": "https://github.com/loxrib/WeakAuras-Ascension/tree/5741c0cd6ee021a954b83ea6c69edf8bd0bba196",
+    "addon_file_count": 738,
+    "archive_url_for_reference_only": "https://codeload.github.com/Thinato/WeakAuras-Ascension/zip/5741c0cd6ee021a954b83ea6c69edf8bd0bba196",
+    "archive_sha256": "aea45b153da4cd30de3f0097408f1fada59f0a2badd6b382d97fa1850d488674",
+    "archive_bytes": 22022744,
+    "archive_warning": "Export-ignore omits GPL and library license files. Builder reads pinned Git blobs, never this incomplete archive."
+  },
+  "addon_folders": [
+    "WeakAuras",
+    "WeakAurasArchive",
+    "WeakAurasModelPaths",
+    "WeakAurasOptions",
+    "WeakAurasStopMotion",
+    "WeakAurasTemplates"
+  ],
+  "source_fingerprints": {
+    "LICENSE": "db296f2f7f35bca3a174efb0eb392b3b17bd94b341851429a3dff411b1c2fc73",
+    "WeakAuras/Prototypes.lua": "324b1fe1cabdf6629f4c9c663bd9c3250e076f71361c91f7995b1612e42eca33",
+    "WeakAuras/RegionTypes/Icon.lua": "131fe0f3fd2e073d3bea02e62de56325d49d8ef32d8a9cd2fd7e63c368d0f79c",
+    "WeakAuras/Init.lua": "743cf5f19fc0108faf590d757adc782620092bb443437aeb8a0b87614a3ce62d",
+    "WeakAuras/WeakAuras.toc": "184b71ebd990336079fe7c869488b71db5c79cd4f58c97b567a65772926b8f24"
+  },
+  "required_notices": [
+    "LICENSE",
+    "WeakAuras/LICENSE",
+    "WeakAuras/Libs/Archivist/LICENSE.md",
+    "WeakAuras/Libs/Archivist/libs/LibDeflate/LICENSE.txt",
+    "WeakAuras/Libs/LibCustomGlow-1.0/README.md",
+    "WeakAuras/Media/Fira License.txt",
+    "WeakAuras/Media/PT Sans License.txt",
+    "WeakAuras/Media/Provided by.txt",
+    "WeakAuras/Media/Creative Commons - Attribution 3.0.txt",
+    "WeakAuras/Media/Creative Commons - Attribution-NonCommercial 3.0.txt",
+    "WeakAuras/Media/Creative Commons - CC0 1.0.txt",
+    "WeakAuras/Media/Creative Commons - Sampling Plus 1.0.txt"
+  ],
+  "license_scope": {
+    "addon": "Upstream GPL version 2 license text retained; no blanket relicensing of third-party components",
+    "libraries": "Original inline notices retained; Archivist CC0 and its LibDeflate LGPLv3 notices included",
+    "fonts": "Fira and PT Sans SIL OFL 1.1 notices retained",
+    "sounds": "Original author mapping in Provided by.txt retained with CC0, CC BY 3.0, CC BY-NC 3.0 and Sampling Plus 1.0 texts; media is not represented as unrestricted commercial content",
+    "new_tooling": "AzerothLabWorks GPL-2.0-or-later; see COPYING-CoA"
+  },
+  "local_comparison": {
+    "public_export_files": 734,
+    "byte_identical": 538,
+    "line_endings_only": 195,
+    "content_difference_files": ["WeakAuras/RegionTypes/Icon.lua"],
+    "additional_local_notices_also_in_git": 4,
+    "method": "Compare public pinned archive against six installed addon folders; no WTF or SavedVariables contents accessed",
+    "limitation": "Identifies matching source family, not the historical delivery channel or original installer"
+  },
+  "changes": [
+    {
+      "path": "WeakAuras/RegionTypes/Icon.lua",
+      "patch": "third-party/patches/WeakAuras-Icon-cooldown.patch",
+      "description": "Require cooldown.expirationTime before arithmetic in PreShow; preserve existing G1 nil guard and add dated modification notice"
+    }
+  ],
+  "native_range_dependency": "https://github.com/AzerothLabWorks/coa-local-server/blob/main/docs/client-setup.md",
+  "personal_settings_included": false,
+  "client_executables_or_mpqs_included": false,
+  "four_addon_installer_integration": false
+}

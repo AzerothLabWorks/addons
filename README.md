@@ -17,18 +17,32 @@ The CoA packages are tied to the [coa-local-server](https://github.com/AzerothLa
 character databases, premium collections, or the environmental enhancement packages. A 30300
 TOC alone is not evidence of stock WotLK compatibility.
 
+**Looking for WeakAuras?** Use the separate [WeakAuras for CoA guide](docs/weakauras-coa.md) and
+[5.21.2-alw.1 compatibility download](https://github.com/AzerothLabWorks/addons/releases/tag/weakauras-coa-5.21.2-alw.1).
+It identifies the reviewed Ascension fork, our small cooldown fix, the separate shared range-library repair for CoA range checks,
+and the original component licenses. It is separate from the four packages below and is not installed by
+`Install-CoAAddons.ps1`. Retail WeakAuras is not a substitute.
+
 ## Install CoA addons
 
 Download the [G1 addon release](https://github.com/AzerothLabWorks/addons/releases/tag/g1-20261029) for
 ready-made ZIPs, `release.json` and `SHA256SUMS`. Keep all four ZIPs and `release.json` together when using
 the verified installer below. The installer script is included in the tagged source download.
 
+For downloaded ZIPs, save the [tagged installer](https://raw.githubusercontent.com/AzerothLabWorks/addons/g1-20261029/scripts/Install-CoAAddons.ps1)
+alongside them and run it with PowerShell 7; no Python build is needed:
+
+```powershell
+pwsh ./Install-CoAAddons.ps1 -ClientPath 'C:\Games\MyCoAClient' -PackageDirectory . -Action Check
+pwsh ./Install-CoAAddons.ps1 -ClientPath 'C:\Games\MyCoAClient' -PackageDirectory . -Action Install
+```
+
 With the game closed, copy the selected addon folders into your existing client's
 `Interface/AddOns` folder. The TOC must be immediately inside each addon folder; avoid an extra
 `addons-main` or version-directory layer. Restart the client and enable the addon at character
 selection. Keep the two server-dependent addons paired with the matching server profile.
 
-For verified ZIP installation, build the package set from this checkout using Python 3.10+:
+To build those same four ZIPs from source instead, use Python 3.10+:
 
 ```powershell
 python tools/coa-release/package.py --output dist/coa-g1-20261029
@@ -75,6 +89,7 @@ DBC validation for the LFG catalog is documented separately; game data is not co
 - Add a capability/status display for missing or mismatched server components.
 - Consider configurable gathering sound, cooldown and visual styling after real-world feedback.
 - Keep environmental patches and third-party addon downloads optional, credited and independently versioned.
+- Keep the separate Ascension WeakAuras package pinned, with source provenance, component notices and the matching client range repair.
 - Keep WotLK/Legion improvements on their own reviewed release tracks; they are unchanged by this CoA import.
 
 The [full server/gameplay roadmap](https://github.com/AzerothLabWorks/coa-local-server/blob/main/docs/roadmap.md)

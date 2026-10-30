@@ -12,3 +12,8 @@
 /COPYING-CoA text eol=lf
 /.gitattributes text eol=lf
 /.gitignore text eol=lf
+/docs/** text eol=lf
+/tools/weakauras-coa/** text eol=lf
+/third-party/*.json text eol=lf
+/third-party/patches/*.patch -text
+/.github/workflows/weakauras-coa.yml text eol=lf
